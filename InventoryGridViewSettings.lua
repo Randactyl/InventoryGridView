@@ -124,6 +124,9 @@ function InventoryGridViewSettings:GetGridSize()
 end
 
 function InventoryGridViewSettings:GetTextureSet()
+	if TEXTURES[settings.skinChoice] == nil then
+		settings.skinChoice = "Rushmik"
+	end
 	return TEXTURES[settings.skinChoice]
 end
 
