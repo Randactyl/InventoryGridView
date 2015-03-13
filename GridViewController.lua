@@ -601,10 +601,14 @@ local function igvTooltipAnchor(tooltip, buttonPart, comparativeTooltip1, compar
     ZO_Tooltips_SetupDynamicTooltipAnchors(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
     -- custom setup
     if buttonPart:GetParent().isGrid then
-        --tooltip:ClearAnchors()
+        tooltip:ClearAnchors()
         local gridSize = InventoryGridViewSettings:GetGridSize()
-        local col = ((buttonPart:GetLeft() - 1432) / gridSize) + 1
-        local offsetX = -(gridSize * col - gridSize)
+        --magic number 1432 needs to be replaced by calculation from right screen edge
+        local col = ((buttonPart:GetLeft() - 1432) / gridSize)
+        d("left: " .. buttonPart:GetLeft())
+        d("col: " .. col)
+        local offsetX = -(gridSize * (col + 1) - gridSize)
+        d("offsetX: " .. offsetX)
         tooltip:SetOwner(buttonPart, RIGHT, offsetX, 0)
     end
 end
@@ -658,7 +662,7 @@ function InitGridView( isGrid )
             listView.dataTypes[1].setupCallback = 
                 function(rowControl, slot)                      
                     rowControl.isGrid = isGrid
-                    --rowControl:GetNamedChild("Button").customTooltipAnchor = igvTooltipAnchor
+                    rowControl:GetNamedChild("Button").customTooltipAnchor = igvTooltipAnchor
                     hookedFunctions(rowControl, slot)
                 end
         end
