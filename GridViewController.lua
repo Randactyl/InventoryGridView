@@ -579,6 +579,23 @@ local function ScrollController(self)
     end
 end
 
+local function CreateSlotAnimation(inventorySlot)
+    if inventorySlot.slotControlType == "listSlot" and inventorySlot.isGrid == true then
+        local control = inventorySlot
+        local controlType = inventorySlot:GetType()
+ 
+        if (controlType == CT_CONTROL and control.slotControlType == "listSlot") then
+            control = inventorySlot:GetNamedChild("MultiIcon") or inventorySlot:GetNamedChild("Button")
+        end
+ 
+ 		--want to force refresh of control animation
+        if (control --[[and not control.animation]]) then
+            control.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", control)
+            control.animation:GetFirstAnimation():SetEndScale(SHARED_INVENTORY.IGViconZoomLevel)
+        end
+    end
+end
+
 local function igvTooltipAnchor(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
     -- call the regular one, not ideal but probably better than copying most of the code here :)
     ZO_Tooltips_SetupDynamicTooltipAnchors(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
@@ -631,6 +648,7 @@ end]]
 --and hook necessary functions for operation.
 function InitGridView( isGrid )
     ZO_PreHook("ZO_ScrollList_UpdateScroll", ScrollController)
+    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
 
     for _,v in pairs(PLAYER_INVENTORY.inventories) do
         local listView = v.listView

@@ -268,6 +268,8 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
     REFINE.isOutlines = IGVSettings:IsAllowOutline()
     REFINE.gridSize = IGVSettings:GetGridSize()]]
 
+    SHARED_INVENTORY.IGViconZoomLevel = IGVSettings:GetIconZoomLevel()
+
     InitGridView()
     InventoryGridView_ToggleOutlines(BAGS, IGVSettings:IsAllowOutline())
     InventoryGridView_ToggleOutlines(QUEST, IGVSettings:IsAllowOutline())
