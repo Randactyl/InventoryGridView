@@ -603,12 +603,12 @@ local function igvTooltipAnchor(tooltip, buttonPart, comparativeTooltip1, compar
     if buttonPart:GetParent().isGrid then
         tooltip:ClearAnchors()
         local gridSize = InventoryGridViewSettings:GetGridSize()
-        --magic number 1432 needs to be replaced by calculation from right screen edge
-        local col = ((buttonPart:GetLeft() - 1432) / gridSize)
-        d("left: " .. buttonPart:GetLeft())
-        d("col: " .. col)
-        local offsetX = -(gridSize * (col + 1) - gridSize)
-        d("offsetX: " .. offsetX)
+        local edge = ZO_PlayerInventoryBackpackContents:GetLeft()
+        local col = ((buttonPart:GetLeft() - edge) / gridSize) + 1
+        --d("left: " .. buttonPart:GetLeft())
+        --d("col: " .. col)
+        local offsetX = -(gridSize * col - gridSize)
+        --d("offsetX: " .. offsetX)
         tooltip:SetOwner(buttonPart, RIGHT, offsetX, 0)
     end
 end
