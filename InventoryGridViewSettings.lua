@@ -72,6 +72,7 @@ function InventoryGridViewSettings:Initialize()
         skinChoice = "Rushmik",
         valueTooltip = true,
         iconZoomLevel = 1.5,
+        isTooltipOffset = true,
     }
 
     settings = ZO_SavedVars:New("InventoryGridView_Settings", 2, nil, defaults)
@@ -135,6 +136,10 @@ function InventoryGridViewSettings:GetIconZoomLevel()
 	return settings.iconZoomLevel
 end
 
+function InventoryGridViewSettings:IsTooltipOffset()
+	return settings.isTooltipOffset
+end
+
 function InventoryGridViewSettings:IsShowValueTooltip()
 	return settings.valueTooltip
 end
@@ -169,7 +174,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 		type = "panel",
 		name = "Inventory Grid View",
 		author = "ingeniousclown and Randactyl",
-		version = "1.3.7.0",
+		version = "1.4.0.0",
 		slashCommand = "/inventorygridview",
 		registerForRefresh = true,
 		--registerForDefaults = true,
@@ -276,6 +281,15 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 						settings.valueTooltip = value
 					end,
 			reference = "IGV_Value_Tooltip"
+		},
+		[8] = {
+			type = "checkbox",
+			name = "Offset Item Tooltips",
+			tooltip = "Should we move item tooltips so they do not cover the item grid?",
+			getFunc = function() return settings.isTooltipOffset end,
+			setFunc = function(value)
+						settings.isTooltipOffset = value
+					  end,
 		},
 	}
 
