@@ -174,7 +174,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 		type = "panel",
 		name = "Inventory Grid View",
 		author = "ingeniousclown and Randactyl",
-		version = "1.4.0.0",
+		version = "1.4.1.0",
 		slashCommand = "/inventorygridview",
 		registerForRefresh = true,
 		--registerForDefaults = true,
