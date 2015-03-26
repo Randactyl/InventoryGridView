@@ -533,13 +533,16 @@ local function igvTooltipAnchor(tooltip, buttonPart, comparativeTooltip1, compar
     -- call the regular one, not ideal but probably better than copying most of the code here :)
     ZO_Tooltips_SetupDynamicTooltipAnchors(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
     -- custom setup
+    tooltip:ClearAnchors()
     if InventoryGridViewSettings:IsTooltipOffset() and buttonPart:GetParent().isGrid then
-        tooltip:ClearAnchors()
+        local anchorPoint = buttonPart:GetParent()
         local gridSize = InventoryGridViewSettings:GetGridSize()
         local edge = ZO_PlayerInventoryBackpackContents:GetLeft()
-        local col = ((buttonPart:GetLeft() - edge) / gridSize) + 1
+        local col = ((anchorPoint:GetLeft() - edge) / gridSize) + 1
         local offsetX = -(gridSize * col - gridSize)
-        tooltip:SetOwner(buttonPart, RIGHT, offsetX, 0)
+        tooltip:SetOwner(anchorPoint, RIGHT, offsetX, 0)
+    else
+        tooltip:SetOwner(anchorPoint, RIGHT, 0, 0)
     end
 end
 
