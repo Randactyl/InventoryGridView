@@ -28,18 +28,18 @@ local MONEY_LINE_HEIGHT = 18
 
 --override this function so I can display AP cost in the store view. Added currencyType.
 function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, currencyType)
-    local moneyLine = GetControl(tooltipControl, "SellPrice")        
+    local moneyLine = GetControl(tooltipControl, "SellPrice")
     local reasonLabel = GetControl(moneyLine, "Reason")
     local currencyControl = GetControl(moneyLine, "Currency")
 
     local currencyType = currencyType or CURRENCY_TYPE_MONEY
-        
-    moneyLine:SetHidden(false)    
-   
+
+    moneyLine:SetHidden(false)
+
     local width = 0
     reasonLabel:ClearAnchors()
     currencyControl:ClearAnchors()
-    
+
      -- right now reason is always a string index
     if(reason and reason ~= 0) then
         reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
@@ -48,7 +48,7 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
         reasonLabel:SetHidden(false)
         reasonLabel:SetColor(SELL_REASON_COLOR:UnpackRGBA())
         reasonLabel:SetText(GetString(reason))
-        
+
         local reasonTextWidth, reasonTextHeight = reasonLabel:GetTextDimensions()
         width = width + reasonTextWidth + REASON_CURRENCY_SPACING
     else
@@ -78,7 +78,7 @@ local function AddGold(rowControl)
     local currencyType, notEnough
 
     for _,v in pairs(rowControl:GetNamedChild("SellPrice").currencyArgs) do
-        if(v.isUsed == true) then 
+        if(v.isUsed == true) then
             currencyType = v.type
             notEnough = v.notEnough
         end

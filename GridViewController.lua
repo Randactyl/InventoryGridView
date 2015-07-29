@@ -74,7 +74,7 @@ local function ReshapeSlot(control, isGrid, isOutlines, width, height, forceUpda
         control:SetDimensions(width, height)
         button:SetDimensions(height * ICON_MULT, height * ICON_MULT)
         outline:SetDimensions(height, height)
-        
+
         if(isGrid == true and new ~= nil) then
             button:SetAnchor(CENTER, control, CENTER)
 
@@ -125,12 +125,12 @@ end
 local function ReshapeSlots(self)
     local allControlsParent = self:GetNamedChild("Contents")
     local numControls = allControlsParent:GetNumChildren()
-    
+
     local width, height
     if self.isGrid == true then
         width = self.gridSize
         height = self.gridSize
-    else 
+    else
         width = self.contentsWidth
         height = self.listHeight
     end
@@ -190,7 +190,7 @@ local function UpdateScrollFade(useFadeGradient, scroll, slider, sliderValue)
         else
             scroll:SetFadeGradient(1, 0, 0, 0)
         end
-        
+
         if(sliderValue < sliderMax) then
             scroll:SetFadeGradient(2, 0, -1, zo_min(sliderMax - sliderValue, 64))
         else
@@ -215,7 +215,7 @@ local function RemoveAnimationOnControl(control, animationFieldName)
 end
 
 --scrolltemplates.lua line 622
-local function UnhighlightControl(self, control) 
+local function UnhighlightControl(self, control)
     RemoveAnimationOnControl(control, "HighlightAnimation")
 
     self.highlightedControl = nil
@@ -247,7 +247,7 @@ local function AreDataEqualSelections(self, data1, data2)
 
     if(data1 == nil or data2 == nil) then
         return false
-    end        
+    end
 
     local dataEntry1 = data1.dataEntry
     local dataEntry2 = data2.dataEntry
@@ -266,7 +266,7 @@ local function FreeActiveScrollListControl(self, i)
     local currentControl = self.activeControls[i]
     local currentDataEntry = currentControl.dataEntry
     local dataType = self.dataTypes[currentDataEntry.typeId]
-    
+
     if(self.highlightTemplate and currentControl == self.highlightedControl) then
         UnhighlightControl(self, currentControl)
         if(self.highlightLocked) then
@@ -277,15 +277,15 @@ local function FreeActiveScrollListControl(self, i)
     if(currentControl == self.pendingHighlightControl) then
         self.pendingHighlightControl = nil
     end
-    
+
     if(AreSelectionsEnabled(self) and currentControl == self.selectedControl) then
         UnselectControl(self, currentControl)
     end
-    
+
     if(dataType.hideCallback) then
         dataType.hideCallback(currentControl, currentControl.dataEntry.data)
     end
-    
+
     dataType.pool:ReleaseObject(currentControl.key)
     currentControl.key = nil
     currentControl.dataEntry = nil
@@ -342,38 +342,38 @@ local function UpdateScroll_Grid(self)
     ----------------------------------------------------------------------------
 
     UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
-    
+
     --remove active controls that are now hidden
     local i = 1
     local numActive = #activeControls
     while(i <= numActive) do
         local currentDataEntry = activeControls[i].dataEntry
-        
+
         if(currentDataEntry.bottom < offset or currentDataEntry.top > offset + windowHeight) then
             FreeActiveScrollListControl(self, i)
             numActive = numActive - 1
         else
             i = i + 1
         end
-        
+
         consideredMap[currentDataEntry] = true
     end
-        
+
     --add revealed controls
     local firstInViewIndex = zo_floor(offset / controlHeight)+1
-   
+
     local data = self.data
     local dataTypes = self.dataTypes
     local visibleData = self.visibleData
     local mode = self.mode
-    
+
     local i = firstInViewIndex
     local visibleDataIndex = visibleData[i]
     local dataEntry = data[visibleDataIndex]
     local bottomEdge = offset + windowHeight
-    
+
     local controlTop, controlLeft
-    
+
     --modified------------------------------------------------------------------
     if(dataEntry) then
         --removed isUniform check because we're assuming always uniform
@@ -385,7 +385,7 @@ local function UpdateScroll_Grid(self)
             local dataType = dataTypes[dataEntry.typeId]
             local controlPool = dataType.pool
             local control, key = controlPool:AcquireObject()
-            
+
             control:SetHidden(false)
             control.dataEntry = dataEntry
             control.key = key
@@ -397,11 +397,11 @@ local function UpdateScroll_Grid(self)
             end
             table.insert(activeControls, control)
             consideredMap[dataEntry] = true
-            
+
             if(AreDataEqualSelections(self, dataEntry.data, self.selectedData)) then
                 SelectControl(self, control)
             end
-            
+
             --even uniform active controls need to know their position to determine if they are still active
             --removed isUniform check because we're assuming always uniform
             dataEntry.top = controlTop
@@ -421,11 +421,11 @@ local function UpdateScroll_Grid(self)
         end
         ------------------------------------------------------------------------
     end
-    
+
     --update positions
     local contents = self.contents
     local numActive = #activeControls
-    
+
     for i = 1, numActive do
         local currentControl = activeControls[i]
         local currentData = currentControl.dataEntry
@@ -439,8 +439,8 @@ local function UpdateScroll_Grid(self)
         currentControl:SetAnchor(TOPLEFT, contents, TOPLEFT, controlOffsetX, controlOffset)
         --removed other anchor because this will no longer stretch across the contents pane
         ------------------------------------------------------------------------
-    end  
-    
+    end
+
     --reset considered
     for k,v in pairs(consideredMap) do
         consideredMap[k] = nil
@@ -482,7 +482,7 @@ function InventoryGridView_ToggleGrid(self, toggle)
     self.isGrid = toggle
     self.forceUpdate = true
     ZO_ScrollList_ResetToTop(self)
-    
+
     ReshapeSlots(self)
     while(#self.activeControls > 0) do
         FreeActiveScrollListControl(self, 1)
@@ -515,11 +515,11 @@ local function CreateSlotAnimation(inventorySlot)
     if inventorySlot.slotControlType == "listSlot" and inventorySlot.isGrid == true then
         local control = inventorySlot
         local controlType = inventorySlot:GetType()
- 
+
         if (controlType == CT_CONTROL and control.slotControlType == "listSlot") then
             control = inventorySlot:GetNamedChild("MultiIcon") or inventorySlot:GetNamedChild("Button")
         end
- 
+
  		--want to force refresh of control animation
         if (control --[[and not control.animation]]) then
             control.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", control)
@@ -555,10 +555,10 @@ function InitGridView( isGrid )
     for _,v in pairs(PLAYER_INVENTORY.inventories) do
         local listView = v.listView
         if listView and listView.dataTypes and listView.dataTypes[1] then
-            local hookedFunctions = listView.dataTypes[1].setupCallback             
-            
-            listView.dataTypes[1].setupCallback = 
-                function(rowControl, slot)                      
+            local hookedFunctions = listView.dataTypes[1].setupCallback
+
+            listView.dataTypes[1].setupCallback =
+                function(rowControl, slot)
                     rowControl.isGrid = isGrid
                     rowControl:GetNamedChild("Button").customTooltipAnchor = igvTooltipAnchor
                     hookedFunctions(rowControl, slot)

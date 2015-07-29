@@ -202,7 +202,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 			name = "Rarity Outlines",
 			tooltip = "Toggle the outlines on or off.",
 			getFunc = function()
-						return self:IsAllowOutline() 
+						return self:IsAllowOutline()
 					end,
 			setFunc = function(value)
 						settings.allowRarityColor = value
@@ -266,7 +266,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 			max = 150,
 			step = 10,
 			getFunc = function() return settings.iconZoomLevel * 100 end,
-			setFunc = function(value) 
+			setFunc = function(value)
 						  settings.iconZoomLevel = value / 100
 						  SHARED_INVENTORY.IGViconZoomLevel = value / 100
 					  end,
@@ -303,11 +303,11 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 			example:SetParent(InventoryGridViewSettingsPanel)
 			example:SetDimensions(settings.gridSize, settings.gridSize)
 			example:SetAnchor(CENTER, IGV_Grid_Size_Example, CENTER)
-			example:SetHandler("OnMouseEnter", 
+			example:SetHandler("OnMouseEnter",
 				function()
 					ex_hover:SetHidden(false)
 				end)
-			example:SetHandler("OnMouseExit", 
+			example:SetHandler("OnMouseExit",
 				function()
 					ex_hover:SetHidden(true)
 				end)
