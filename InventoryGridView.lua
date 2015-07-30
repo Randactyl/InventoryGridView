@@ -27,19 +27,22 @@ local ITEM_TOOLTIP_CURRENCY_OPTIONS = { showTooltips = false }
 local MONEY_LINE_HEIGHT = 18
 
 --override this function so I can display AP cost in the store view. Added currencyType.
+--tooltip.lua line 68
 function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, currencyType)
-    local moneyLine = GetControl(tooltipControl, "SellPrice")        
+    local moneyLine = GetControl(tooltipControl, "SellPrice")
     local reasonLabel = GetControl(moneyLine, "Reason")
     local currencyControl = GetControl(moneyLine, "Currency")
 
+    --added---------------------------------------------------------------------
     local currencyType = currencyType or CURRENCY_TYPE_MONEY
-        
-    moneyLine:SetHidden(false)    
-   
+    ----------------------------------------------------------------------------
+
+    moneyLine:SetHidden(false)
+
     local width = 0
     reasonLabel:ClearAnchors()
     currencyControl:ClearAnchors()
-    
+
      -- right now reason is always a string index
     if(reason and reason ~= 0) then
         reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
@@ -48,7 +51,7 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
         reasonLabel:SetHidden(false)
         reasonLabel:SetColor(SELL_REASON_COLOR:UnpackRGBA())
         reasonLabel:SetText(GetString(reason))
-        
+
         local reasonTextWidth, reasonTextHeight = reasonLabel:GetTextDimensions()
         width = width + reasonTextWidth + REASON_CURRENCY_SPACING
     else
@@ -58,7 +61,10 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
 
     if(amount > 0) then
         currencyControl:SetHidden(false)
-        ZO_CurrencyControl_SetSimpleCurrency(currencyControl, currencyType, amount, ITEM_TOOLTIP_CURRENCY_OPTIONS, CURRENCY_DONT_SHOW_ALL, notEnough)
+        --modified--------------------------------------------------------------
+        ZO_CurrencyControl_SetSimpleCurrency(currencyControl, currencyType,
+            amount, ITEM_TOOLTIP_CURRENCY_OPTIONS, CURRENCY_DONT_SHOW_ALL, notEnough)
+        ------------------------------------------------------------------------
         width = width + currencyControl:GetWidth()
     else
         currencyControl:SetHidden(true)
@@ -69,29 +75,28 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
     moneyLine:SetDimensions(width, MONEY_LINE_HEIGHT)
 end
 
-local function AddGold(rowControl)
+local function AddCurrency(rowControl)
     if(not rowControl.dataEntry) then return end
 
     local bagId = rowControl.dataEntry.data.bagId or rowControl:GetParent():GetParent().bagId
     local slotIndex = rowControl.dataEntry.data.slotIndex
-    local _, stack, sellPrice
-    local currencyType, notEnough
+    local _, stack, sellPrice, currencyType, notEnough
 
     for _,v in pairs(rowControl:GetNamedChild("SellPrice").currencyArgs) do
-        if(v.isUsed == true) then 
+        if(v.isUsed == true) then
             currencyType = v.type
             notEnough = v.notEnough
         end
     end
 
     if bagId == STORE.bagId or bagId == BUYBACK.bagId then
-        if(currencyType == CURRENCY_TYPE_ALLIANCE_POINTS) then
-            sellPrice = rowControl.dataEntry.data.currencyQuantity1
-        else
+        if currencyType == CURT_MONEY then
             sellPrice = rowControl.dataEntry.data.price
+        else
+            sellPrice = rowControl.dataEntry.data.currencyQuantity1
         end
-        stack = rowControl.dataEntry.data.stack
 
+        stack = rowControl.dataEntry.data.stack
         ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack, 0, notEnough, currencyType)
     else
         _, stack, sellPrice = GetItemInfo(bagId, slotIndex)
@@ -99,10 +104,10 @@ local function AddGold(rowControl)
     end
 end
 
-local function AddGoldSoon(rowControl)
+local function AddCurrencySoon(rowControl)
     if(rowControl:GetParent():GetParent().bagId == INVENTORY_QUEST_ITEM) then return end
     if(rowControl and rowControl.isGrid and IGVSettings:IsShowValueTooltip()) then
-        zo_callLater(function() AddGold(rowControl) end, 50)
+        zo_callLater(function() AddCurrency(rowControl) end, 50)
     end
 end
 
@@ -288,7 +293,7 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
 
     InventoryGridView_SetToggleButtonTexture()
 
-    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddGoldSoon)
+    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
 end
 
 EVENT_MANAGER:RegisterForEvent("InventoryGridViewLoaded", EVENT_ADD_ON_LOADED, InventoryGridViewLoaded)
