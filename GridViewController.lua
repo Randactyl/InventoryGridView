@@ -562,12 +562,11 @@ end
 
 --add necessary fields to the default UI's controls to facilitate the grid view
 --and hook necessary functions for operation.
-function InitGridView( isGrid )
+function InitGridView(isGrid)
     ZO_PreHook("ZO_ScrollList_UpdateScroll", ScrollController)
     ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
 
-    for _,v in pairs(PLAYER_INVENTORY.inventories) do
-        local listView = v.listView
+    local function prepListView(listView)
         if listView and listView.dataTypes and listView.dataTypes[1] then
             local hookedFunctions = listView.dataTypes[1].setupCallback
 
@@ -579,6 +578,11 @@ function InitGridView( isGrid )
                 end
         end
     end
+    for _,v in pairs(PLAYER_INVENTORY.inventories) do
+        prepListView(v.listView)
+    end
+    prepListView(ZO_StoreWindowList)
+    prepListView(ZO_BuyBackList)
 end
 --end setup functions-----------------------------------------------------------
 
