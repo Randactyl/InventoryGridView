@@ -8,7 +8,8 @@ local BANK = ZO_PlayerBankBackpack			                          --bagId = 3
 local GUILD_BANK = ZO_GuildBankBackpack		                          --bagId = 4
 local STORE = ZO_StoreWindowList			                          --bagId = 5
 local BUYBACK = ZO_BuyBackList				                          --bagId = 6
---local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --bagId = 7
+local QUICKSLOT = ZO_QuickSlotList                                    --bagId = 7
+--local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --bagId = 8
 
 local SKIN_CHOICES = { "Classic", "Rushmik", "Clean: by Tonyleila", "Circles: by Tonyleila" }
 
@@ -65,7 +66,7 @@ function InventoryGridViewSettings:Initialize()
         isGuildBankGrid = true,
         isStoreGrid = true,
         isBuybackGrid = true,
-        isCraftingGrid = true,
+        isQuickslotGrid = true,
         allowRarityColor = true,
         gridSize = 52,
         minimumQuality = "Magic",
@@ -94,8 +95,8 @@ function InventoryGridViewSettings:IsGrid( inventoryId )
 		return settings.isStoreGrid
 	elseif(inventoryId == 6) then
 		return settings.isBuybackGrid
-	else
-		return settings.isCraftingGrid
+	elseif(inventoryId == 7) then
+		return settings.isQuickslotGrid
 	end
 end
 
@@ -112,8 +113,8 @@ function InventoryGridViewSettings:ToggleGrid( inventoryId )
 		settings.isStoreGrid = not settings.isStoreGrid
 	elseif(inventoryId == 6) then
 		settings.isBuybackGrid = not settings.isBuybackGrid
-	else
-		settings.isCraftingGrid = not settings.isCraftingGrid
+	elseif(inventoryId == 7) then
+		settings.isQuickslotGrid = not settings.isQuickslotGrid
 	end
 end
 
@@ -202,7 +203,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 			name = "Rarity Outlines",
 			tooltip = "Toggle the outlines on or off.",
 			getFunc = function()
-						return self:IsAllowOutline() 
+						return self:IsAllowOutline()
 					end,
 			setFunc = function(value)
 						settings.allowRarityColor = value
@@ -213,6 +214,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 						InventoryGridView_ToggleOutlines(GUILD_BANK, settings.allowRarityColor)
 						InventoryGridView_ToggleOutlines(STORE, settings.allowRarityColor)
 						InventoryGridView_ToggleOutlines(BUYBACK, settings.allowRarityColor)
+						InventoryGridView_ToggleOutlines(QUICKSLOT, settings.allowRarityColor)
 						--InventoryGridView_ToggleOutlines(REFINE, settings.allowRarityColor)
 					end,
 			reference = "IGV_Rarity_Outlines"
@@ -246,6 +248,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 						GUILD_BANK.gridSize = value
 						STORE.gridSize = value
 						BUYBACK.gridSize = value
+						QUICKSLOT.gridSize = value
 						--REFINE.gridSize = value
 						InventoryGridView_ToggleOutlines(BAGS, settings.allowRarityColor)
 						InventoryGridView_ToggleOutlines(QUEST, settings.allowRarityColor)
@@ -253,6 +256,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 						InventoryGridView_ToggleOutlines(GUILD_BANK, settings.allowRarityColor)
 						InventoryGridView_ToggleOutlines(STORE, settings.allowRarityColor)
 						InventoryGridView_ToggleOutlines(BUYBACK, settings.allowRarityColor)
+						InventoryGridView_ToggleOutlines(QUICKSLOT, settings.allowRarityColor)
 						--InventoryGridView_ToggleOutlines(REFINE, settings.allowRarityColor)
 						example:SetDimensions(value, value)
 					end,
@@ -266,7 +270,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 			max = 150,
 			step = 10,
 			getFunc = function() return settings.iconZoomLevel * 100 end,
-			setFunc = function(value) 
+			setFunc = function(value)
 						  settings.iconZoomLevel = value / 100
 						  SHARED_INVENTORY.IGViconZoomLevel = value / 100
 					  end,
@@ -303,11 +307,11 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 			example:SetParent(InventoryGridViewSettingsPanel)
 			example:SetDimensions(settings.gridSize, settings.gridSize)
 			example:SetAnchor(CENTER, IGV_Grid_Size_Example, CENTER)
-			example:SetHandler("OnMouseEnter", 
+			example:SetHandler("OnMouseEnter",
 				function()
 					ex_hover:SetHidden(false)
 				end)
-			example:SetHandler("OnMouseExit", 
+			example:SetHandler("OnMouseExit",
 				function()
 					ex_hover:SetHidden(true)
 				end)

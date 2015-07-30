@@ -17,7 +17,8 @@ local BANK = ZO_PlayerBankBackpack                                    --bagId = 
 local GUILD_BANK = ZO_GuildBankBackpack                               --bagId = 4
 local STORE = ZO_StoreWindowList                                      --bagId = 5
 local BUYBACK = ZO_BuyBackList                                        --bagId = 6
---local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --bagId = 7
+local QUICKSLOT = ZO_QuickSlotList                                    --bagId = 7
+--local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --bagId = 8
 
 local toggleButtonTextures = {}
 
@@ -138,7 +139,7 @@ local function AddButton(parentWindow, inventoryId)
     button:SetMouseEnabled(true)
 
     --where should the button go?
-    if inventoryId == STORE.bagId or inventoryId == BUYBACK.bagId then
+    if inventoryId == STORE.bagId or inventoryId == BUYBACK.bagId or inventoryId == QUICKSLOT.bagId then
         button.itemArea = parentWindow:GetNamedChild("List")
     else
         button.itemArea = parentWindow:GetNamedChild("Backpack")
@@ -259,6 +260,22 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
     BUYBACK.isOutlines = IGVSettings:IsAllowOutline()
     BUYBACK.gridSize = IGVSettings:GetGridSize()
 
+    --Quickslot inventory
+    controlWidth = QUICKSLOT.controlHeight
+    contentsWidth = QUICKSLOT:GetNamedChild("Contents"):GetWidth()
+    itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
+    gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
+    QUICKSLOT.forceUpdate = true
+    QUICKSLOT.listHeight = controlWidth
+    QUICKSLOT.leftPadding = leftPadding
+    QUICKSLOT.contentsWidth = contentsWidth
+    QUICKSLOT.itemsPerRow = itemsPerRow
+    QUICKSLOT.gridSpacing = gridSpacing
+    QUICKSLOT.bagId = 7
+    QUICKSLOT.isGrid = IGVSettings:IsGrid(QUICKSLOT.bagId)
+    QUICKSLOT.isOutlines = IGVSettings:IsAllowOutline()
+    QUICKSLOT.gridSize = IGVSettings:GetGridSize()
+
     --Crafting refinement
     --[[controlWidth = REFINE.controlHeight
     contentsWidth = REFINE:GetNamedChild("Contents"):GetWidth()
@@ -268,7 +285,7 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
     REFINE.contentsWidth = contentsWidth
     REFINE.itemsPerRow = itemsPerRow
     REFINE.gridSpacing = gridSpacing
-    REFINE.bagId = 7
+    REFINE.bagId = 8
     REFINE.isGrid = IGVSettings:IsGrid(REFINE.bagId)
     REFINE.isOutlines = IGVSettings:IsAllowOutline()
     REFINE.gridSize = IGVSettings:GetGridSize()]]
@@ -282,6 +299,7 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
     InventoryGridView_ToggleOutlines(GUILD_BANK, IGVSettings:IsAllowOutline())
     InventoryGridView_ToggleOutlines(STORE, IGVSettings:IsAllowOutline())
     InventoryGridView_ToggleOutlines(BUYBACK, IGVSettings:IsAllowOutline())
+    InventoryGridView_ToggleOutlines(QUICKSLOT, IGVSettings:IsAllowOutline())
     --InventoryGridView_ToggleOutlines(REFINE, IGVSettings:IsAllowOutline())
 
     AddButton(BAGS:GetParent(), BAGS.bagId)
@@ -289,6 +307,7 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
     AddButton(GUILD_BANK:GetParent(), GUILD_BANK.bagId)
     AddButton(STORE:GetParent(), STORE.bagId)
     AddButton(BUYBACK:GetParent(), BUYBACK.bagId)
+    AddButton(QUICKSLOT:GetParent(), QUICKSLOT.bagId)
     --AddButton(REFINE:GetParent(), REFINE.bagId)
 
     InventoryGridView_SetToggleButtonTexture()

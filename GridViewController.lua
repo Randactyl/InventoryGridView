@@ -135,8 +135,8 @@ local function ReshapeSlots(self)
         height = self.listHeight
     end
 
-    --BUYBACK doesn't have the same child element pattern, have to start at 1 instead of 2
-    if self.bagId == INVENTORY_QUEST_ITEM or self.bagId == 6 then
+    --BUYBACK and QUICKSLOT don't have the same child element pattern, have to start at 1 instead of 2
+    if self.bagId == INVENTORY_QUEST_ITEM or self.bagId == 6 or self.bagId == 7 then
         for i = 1, numControls do
             ReshapeSlot(allControlsParent:GetChild(i), self.isGrid, self.isOutlines, width, height, self.forceUpdate)
         end
@@ -583,6 +583,7 @@ function InitGridView(isGrid)
     end
     prepListView(ZO_StoreWindowList)
     prepListView(ZO_BuyBackList)
+    prepListView(ZO_QuickSlotList)
 end
 --end setup functions-----------------------------------------------------------
 
