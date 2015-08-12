@@ -1,14 +1,13 @@
-------------------------------------------------------------------
---InventoryGridView.lua
---Author: ingeniousclown, Randactyl
 --v1.4.1.0
-
---InventoryGridView was designed to try and leverage the default
---UI as much as possible to create a grid view.  The result is
---somewhat hacky, but it works well.
-
---Main functions for the mod.
-------------------------------------------------------------------
+--[[----------------------------------------------------------------------------
+    InventoryGridView.lua
+    Author: Randactyl, ingeniousclown
+    Inventory Grid View was designed to leverage the default UI as much as
+    possible to create a grid view scroll list. The result is somewhat hacky,
+    but it works well.
+    This file mostly coordinates the two other pieces: the settings and
+    the controller.
+--]]----------------------------------------------------------------------------
 local IGVSettings = nil
 
 local toggleButtonTextures = {}
