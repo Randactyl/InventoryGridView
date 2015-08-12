@@ -119,17 +119,18 @@ function InventoryGridView_SetToggleButtonTexture()
 end
 
 local function ButtonClickHandler(button)
-    IGVSettings:ToggleGrid(button.inventoryId)
+    IGVSettings:ToggleGrid(button.IGVId)
 
     -- quest bag uses the same button as inventory, have to piggyback instead of making separate button
-    if(button.inventoryId == INVENTORY_BACKPACK) then
+    if(button.IGVId == INVENTORY_BACKPACK) then
         InventoryGridView_ToggleGrid(button.itemArea:GetParent():GetNamedChild("Quest"), not button.itemArea.isGrid)
     end
     InventoryGridView_ToggleGrid(button.itemArea, not button.itemArea.isGrid)
 end
 
 --parentWindow: parent of ZO_PlayerInventoryBackpack, etc
-local function AddButton(parentWindow, inventoryId)
+local function AddButton(parentWindow, IGVId)
+    if IGVId == INVENTORY_QUEST_ITEM then return end
     --create the button
     local button = WINDOW_MANAGER:CreateControl(parentWindow:GetName() .. "_GridButton", parentWindow, CT_BUTTON)
     button:SetDimensions(24,24)
@@ -139,12 +140,12 @@ local function AddButton(parentWindow, inventoryId)
     button:SetMouseEnabled(true)
 
     --where should the button go?
-    if inventoryId == STORE.bagId or inventoryId == BUYBACK.bagId or inventoryId == QUICKSLOT.bagId then
+    if IGVId == ZO_StoreWindowList.IGVId or IGVId == ZO_BuyBackList.IGVId or IGVId == ZO_QuickSlotList.IGVId then
         button.itemArea = parentWindow:GetNamedChild("List")
     else
         button.itemArea = parentWindow:GetNamedChild("Backpack")
     end
-    button.inventoryId = inventoryId
+    button.IGVId = IGVId
 
     local texture = WINDOW_MANAGER:CreateControl(parentWindow:GetName() .. "_GridButtonTexture", button, CT_TEXTURE)
     texture:SetAnchorFill()
@@ -160,135 +161,38 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
 
     IGVSettings = InventoryGridViewSettings:New()
 
-    --Set up different backpacks
-    --common attributes
+    --Set up grids
     local leftPadding = 25
+    local bags = {
+        [1] = ZO_PlayerInventoryBackpack,
+        [2] = ZO_PlayerInventoryQuest,
+        [3] = ZO_PlayerBankBackpack,
+        [4] = ZO_GuildBankBackpack,
+        [5] = ZO_StoreWindowList,
+        [6] = ZO_BuyBackList,
+        [7] = ZO_QuickSlotList,
+        --[8] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
+    }
+    for IGVId,bag in ipairs(bags) do
+        local controlWidth = bag.controlHeight
+        local contentsWidth = bag:GetNamedChild("Contents"):GetWidth()
+        local itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
+        local gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
+        bag.forceUpdate = true
+        bag.listHeight = controlWidth
+        bag.leftPadding = leftPadding
+        bag.contentsWidth = contentsWidth
+        bag.itemsPerRow = itemsPerRow
+        bag.gridSpacing = gridSpacing
+        bag.IGVId = IGVId
+        bag.isGrid = IGVSettings:IsGrid(IGVId)
+        bag.isOutlines = IGVSettings:IsAllowOutline()
+        bag.gridSize = IGVSettings:GetGridSize()
 
-    --Player's inventory
-    local controlWidth = BAGS.controlHeight
-    local contentsWidth = BAGS:GetNamedChild("Contents"):GetWidth()
-    local itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-    local gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-    BAGS.forceUpdate = false
-    BAGS.listHeight = controlWidth
-    BAGS.leftPadding = leftPadding
-    BAGS.contentsWidth = contentsWidth
-    BAGS.itemsPerRow = itemsPerRow
-    BAGS.gridSpacing = gridSpacing
-    BAGS.bagId = INVENTORY_BACKPACK
-    BAGS.isGrid = IGVSettings:IsGrid(BAGS.bagId)
-    BAGS.isOutlines = IGVSettings:IsAllowOutline()
-    BAGS.gridSize = IGVSettings:GetGridSize()
-
-    --Player's quest item inventory
-    controlWidth = QUEST.controlHeight
-    contentsWidth = QUEST:GetNamedChild("Contents"):GetWidth()
-    itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-    gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-    QUEST.forceUpdate = true
-    QUEST.listHeight = controlWidth
-    QUEST.leftPadding = leftPadding
-    QUEST.contentsWidth = contentsWidth
-    QUEST.itemsPerRow = itemsPerRow
-    QUEST.gridSpacing = gridSpacing
-    QUEST.bagId = INVENTORY_QUEST_ITEM
-    QUEST.isGrid = IGVSettings:IsGrid(BAGS.bagId)
-    QUEST.isOutlines = IGVSettings:IsAllowOutline()
-    QUEST.gridSize = IGVSettings:GetGridSize()
-
-    --Player's bank
-    controlWidth = BANK.controlHeight
-    contentsWidth = BANK:GetNamedChild("Contents"):GetWidth()
-    itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-    gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-    BANK.forceUpdate = true
-    BANK.listHeight = controlWidth
-    BANK.leftPadding = leftPadding
-    BANK.contentsWidth = contentsWidth
-    BANK.itemsPerRow = itemsPerRow
-    BANK.gridSpacing = gridSpacing
-    BANK.bagId = INVENTORY_BANK
-    BANK.isGrid = IGVSettings:IsGrid(BANK.bagId)
-    BANK.isOutlines = IGVSettings:IsAllowOutline()
-    BANK.gridSize = IGVSettings:GetGridSize()
-
-    --Guild banks
-    controlWidth = GUILD_BANK.controlHeight
-    contentsWidth = GUILD_BANK:GetNamedChild("Contents"):GetWidth()
-    itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-    gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-    GUILD_BANK.forceUpdate = true
-    GUILD_BANK.listHeight = controlWidth
-    GUILD_BANK.leftPadding = leftPadding
-    GUILD_BANK.contentsWidth = contentsWidth
-    GUILD_BANK.itemsPerRow = itemsPerRow
-    GUILD_BANK.gridSpacing = gridSpacing
-    GUILD_BANK.bagId = INVENTORY_GUILD_BANK
-    GUILD_BANK.isGrid = IGVSettings:IsGrid(GUILD_BANK.bagId)
-    GUILD_BANK.isOutlines = IGVSettings:IsAllowOutline()
-    GUILD_BANK.gridSize = IGVSettings:GetGridSize()
-
-    --Vendor inventories (Buy and Sell)
-    controlWidth = STORE.controlHeight
-    contentsWidth = STORE:GetNamedChild("Contents"):GetWidth()
-    itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-    gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-    STORE.forceUpdate = true
-    STORE.listHeight = controlWidth
-    STORE.leftPadding = leftPadding
-    STORE.contentsWidth = contentsWidth
-    STORE.itemsPerRow = itemsPerRow
-    STORE.gridSpacing = gridSpacing
-    STORE.bagId = 5
-    STORE.isGrid = IGVSettings:IsGrid(STORE.bagId)
-    STORE.isOutlines = IGVSettings:IsAllowOutline()
-    STORE.gridSize = IGVSettings:GetGridSize()
-
-    --Vendor buyback
-    controlWidth = BUYBACK.controlHeight
-    contentsWidth = BUYBACK:GetNamedChild("Contents"):GetWidth()
-    itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-    gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-    BUYBACK.forceUpdate = true
-    BUYBACK.listHeight = controlWidth
-    BUYBACK.leftPadding = leftPadding
-    BUYBACK.contentsWidth = contentsWidth
-    BUYBACK.itemsPerRow = itemsPerRow
-    BUYBACK.gridSpacing = gridSpacing
-    BUYBACK.bagId = 6
-    BUYBACK.isGrid = IGVSettings:IsGrid(BUYBACK.bagId)
-    BUYBACK.isOutlines = IGVSettings:IsAllowOutline()
-    BUYBACK.gridSize = IGVSettings:GetGridSize()
-
-    --Quickslot inventory
-    controlWidth = QUICKSLOT.controlHeight
-    contentsWidth = QUICKSLOT:GetNamedChild("Contents"):GetWidth()
-    itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-    gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-    QUICKSLOT.forceUpdate = true
-    QUICKSLOT.listHeight = controlWidth
-    QUICKSLOT.leftPadding = leftPadding
-    QUICKSLOT.contentsWidth = contentsWidth
-    QUICKSLOT.itemsPerRow = itemsPerRow
-    QUICKSLOT.gridSpacing = gridSpacing
-    QUICKSLOT.bagId = 7
-    QUICKSLOT.isGrid = IGVSettings:IsGrid(QUICKSLOT.bagId)
-    QUICKSLOT.isOutlines = IGVSettings:IsAllowOutline()
-    QUICKSLOT.gridSize = IGVSettings:GetGridSize()
-
-    --Crafting refinement
-    --[[controlWidth = REFINE.controlHeight
-    contentsWidth = REFINE:GetNamedChild("Contents"):GetWidth()
-    REFINE.forceUpdate = true
-    REFINE.listHeight = controlWidth
-    REFINE.leftPadding = leftPadding
-    REFINE.contentsWidth = contentsWidth
-    REFINE.itemsPerRow = itemsPerRow
-    REFINE.gridSpacing = gridSpacing
-    REFINE.bagId = 8
-    REFINE.isGrid = IGVSettings:IsGrid(REFINE.bagId)
-    REFINE.isOutlines = IGVSettings:IsAllowOutline()
-    REFINE.gridSize = IGVSettings:GetGridSize()]]
+        --if not IGVId == INVENTORY_QUEST_ITEM then
+            AddButton(bag:GetParent(), IGVId)
+        --end
+    end
 
     SHARED_INVENTORY.IGViconZoomLevel = IGVSettings:GetIconZoomLevel()
 
