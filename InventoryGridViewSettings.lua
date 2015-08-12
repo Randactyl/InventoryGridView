@@ -74,7 +74,6 @@ function InventoryGridViewSettings:Initialize()
         gridSize = 52,
         minimumQuality = "Magic",
         skinChoice = "Rushmik",
-        valueTooltip = true,
         iconZoomLevel = 1.5,
         isTooltipOffset = true,
     }
@@ -114,10 +113,6 @@ end
 
 function InventoryGridViewSettings:IsTooltipOffset()
 	return settings.isTooltipOffset
-end
-
-function InventoryGridViewSettings:IsShowValueTooltip()
-	return settings.valueTooltip
 end
 
 function InventoryGridViewSettings:CreateOptionsMenu()
@@ -251,16 +246,6 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 		},
 		[6] = custom,
 		[7] = {
-			type = "checkbox",
-			name = "Tooltip Gold",
-			tooltip = "Should we add the stack's value to the tooltip in grid view?",
-			getFunc = function() return settings.valueTooltip end,
-			setFunc = function(value)
-						settings.valueTooltip = value
-					end,
-			reference = "IGV_Value_Tooltip"
-		},
-		[8] = {
 			type = "checkbox",
 			name = "Offset Item Tooltips",
 			tooltip = "Should we move item tooltips so they do not cover the item grid?",
