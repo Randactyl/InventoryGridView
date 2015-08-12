@@ -2,14 +2,14 @@ local LAM = LibStub("LibAddonMenu-2.0")
 InventoryGridViewSettings = ZO_Object:Subclass()
 local settings = nil
 
-local BAGS = ZO_PlayerInventoryBackpack		                          --bagId = 1
-local QUEST = ZO_PlayerInventoryQuest		                          --bagId = 2
-local BANK = ZO_PlayerBankBackpack			                          --bagId = 3
-local GUILD_BANK = ZO_GuildBankBackpack		                          --bagId = 4
-local STORE = ZO_StoreWindowList			                          --bagId = 5
-local BUYBACK = ZO_BuyBackList				                          --bagId = 6
-local QUICKSLOT = ZO_QuickSlotList                                    --bagId = 7
---local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --bagId = 8
+local BAGS = ZO_PlayerInventoryBackpack		                          --IGVId = 1
+local QUEST = ZO_PlayerInventoryQuest		                          --IGVId = 2
+local BANK = ZO_PlayerBankBackpack			                          --IGVId = 3
+local GUILD_BANK = ZO_GuildBankBackpack		                          --IGVId = 4
+local STORE = ZO_StoreWindowList			                          --IGVId = 5
+local BUYBACK = ZO_BuyBackList				                          --IGVId = 6
+local QUICKSLOT = ZO_QuickSlotList                                    --IGVId = 7
+--local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --IGVId = 8
 
 local SKIN_CHOICES = { "Classic", "Rushmik", "Clean: by Tonyleila", "Circles: by Tonyleila" }
 
@@ -61,61 +61,35 @@ end
 
 function InventoryGridViewSettings:Initialize()
 	local defaults = {
-        isInventoryGrid = true,
-        isBankGrid = true,
-        isGuildBankGrid = true,
-        isStoreGrid = true,
-        isBuybackGrid = true,
-        isQuickslotGrid = true,
+		isGrid = {
+			[1] = true, --BAGS
+			[2] = true, --QUEST
+			[3] = true, --BANK
+			[4] = true, --GUILD_BANK
+			[5] = true, --STORE
+			[6] = true, --BUYBACK
+			[7] = true, --QUICKSLOT
+		},
         allowRarityColor = true,
         gridSize = 52,
         minimumQuality = "Magic",
         skinChoice = "Rushmik",
-        valueTooltip = true,
         iconZoomLevel = 1.5,
         isTooltipOffset = true,
     }
 
-    settings = ZO_SavedVars:New("InventoryGridView_Settings", 2, nil, defaults)
+    settings = ZO_SavedVars:NewAccountWide("InventoryGridView_Settings", 3, nil, defaults)
     self:CreateOptionsMenu()
 	InventoryGridView_SetMinimumQuality(QUALITY[settings.minimumQuality])
 	InventoryGridView_SetTextureSet(TEXTURES[settings.skinChoice])
 end
 
-function InventoryGridViewSettings:IsGrid( inventoryId )
-	if(inventoryId == INVENTORY_BACKPACK) then
-		return settings.isInventoryGrid
-	elseif(inventoryId == INVENTORY_QUEST_ITEM) then
-		return settings.isInventoryGrid
-	elseif(inventoryId == INVENTORY_BANK) then
-		return settings.isBankGrid
-	elseif(inventoryId == INVENTORY_GUILD_BANK) then
-		return settings.isGuildBankGrid
-	elseif(inventoryId == 5) then
-		return settings.isStoreGrid
-	elseif(inventoryId == 6) then
-		return settings.isBuybackGrid
-	elseif(inventoryId == 7) then
-		return settings.isQuickslotGrid
-	end
+function InventoryGridViewSettings:IsGrid(IGVId)
+	return settings.isGrid[IGVId]
 end
 
-function InventoryGridViewSettings:ToggleGrid( inventoryId )
-	if(inventoryId == INVENTORY_BACKPACK) then
-		settings.isInventoryGrid = not settings.isInventoryGrid
-	elseif(inventoryId == INVENTORY_QUEST_ITEM) then
-		settings.isInventoryGrid = not settings.isInventoryGrid
-	elseif(inventoryId == INVENTORY_BANK) then
-		settings.isBankGrid = not settings.isBankGrid
-	elseif(inventoryId == INVENTORY_GUILD_BANK) then
-		settings.isGuildBankGrid = not settings.isGuildBankGrid
-	elseif(inventoryId == 5) then
-		settings.isStoreGrid = not settings.isStoreGrid
-	elseif(inventoryId == 6) then
-		settings.isBuybackGrid = not settings.isBuybackGrid
-	elseif(inventoryId == 7) then
-		settings.isQuickslotGrid = not settings.isQuickslotGrid
-	end
+function InventoryGridViewSettings:ToggleGrid(IGVId)
+	settings.isGrid[IGVId] = not settings.isGrid[IGVId]
 end
 
 function InventoryGridViewSettings:IsAllowOutline()
@@ -139,10 +113,6 @@ end
 
 function InventoryGridViewSettings:IsTooltipOffset()
 	return settings.isTooltipOffset
-end
-
-function InventoryGridViewSettings:IsShowValueTooltip()
-	return settings.valueTooltip
 end
 
 function InventoryGridViewSettings:CreateOptionsMenu()
@@ -180,7 +150,6 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 		registerForRefresh = true,
 		--registerForDefaults = true,
 	}
-
 	local optionsData = {
 		[1] = {
 			type = "dropdown",
@@ -277,16 +246,6 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 		},
 		[6] = custom,
 		[7] = {
-			type = "checkbox",
-			name = "Tooltip Gold",
-			tooltip = "Should we add the stack's value to the tooltip in grid view?",
-			getFunc = function() return settings.valueTooltip end,
-			setFunc = function(value)
-						settings.valueTooltip = value
-					end,
-			reference = "IGV_Value_Tooltip"
-		},
-		[8] = {
 			type = "checkbox",
 			name = "Offset Item Tooltips",
 			tooltip = "Should we move item tooltips so they do not cover the item grid?",

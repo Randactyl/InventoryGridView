@@ -1,6 +1,6 @@
 ## Title: Inventory Grid View
-## Author: ingeniousclown and Randactyl
-## Version: 1.4.1.0
+## Author: Randactyl, ingeniousclown
+## Version: 1.5.0.0
 ## APIVersion: 100011
 ## SavedVariables: InventoryGridView_Settings
 ## OptionalDependsOn: LibAddonMenu-2.0
@@ -20,6 +20,6 @@ lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 
-GridViewController.lua
 InventoryGridViewSettings.lua
 InventoryGridView.lua
+GridViewController.lua
