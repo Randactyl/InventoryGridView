@@ -78,7 +78,7 @@ function InventoryGridViewSettings:Initialize()
         isTooltipOffset = true,
     }
 
-    settings = ZO_SavedVars:New("InventoryGridView_Settings", 2, nil, defaults)
+    settings = ZO_SavedVars:NewAccountWide("InventoryGridView_Settings", 3, nil, defaults)
     self:CreateOptionsMenu()
 	InventoryGridView_SetMinimumQuality(QUALITY[settings.minimumQuality])
 	InventoryGridView_SetTextureSet(TEXTURES[settings.skinChoice])
