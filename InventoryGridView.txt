@@ -20,6 +20,6 @@ lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 
-GridViewController.lua
 InventoryGridViewSettings.lua
 InventoryGridView.lua
+GridViewController.lua

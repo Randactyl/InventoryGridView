@@ -1,185 +1,13 @@
---------------------------------------------------------------------------------
---GridViewController.lua
---Author: ingeniousclown, Randactyl
-
---This is mostly a re-implementation of ZO_ScrollList_UpdateScroll
---and copies of all the local functions necessary to make it work.
-
---It also includes an init to add all the necessary fields to
---convert the list to grid view.
---------------------------------------------------------------------------------
-local LIST_SLOT_BACKGROUND = [[EsoUI/Art/Miscellaneous/listItem_backdrop.dds]]
-local LIST_SLOT_HOVER = [[EsoUI/Art/Miscellaneous/listitem_highlight.dds]]
-local ICON_MULT = 0.77
-
-local minimumQuality = ITEM_QUALITY_TRASH
-
-local TEXTURE_SET = nil
-
---------------------------------------------------------------------------------
---my own util functions
---------------------------------------------------------------------------------
-local function GetTopLeftTargetPosition(index, itemsPerRow, controlWidth, controlHeight, leftPadding, gridSpacing)
-    local controlTop = zo_floor((index-1) / itemsPerRow) * (controlHeight + gridSpacing)
-    local controlLeft = ((index-1) % itemsPerRow) * (controlWidth + gridSpacing) + leftPadding
-
-    return controlTop, controlLeft
-end
-
-local function AddColor(control)
-    if(not control.dataEntry) then return end
-    if(control.dataEntry.data.slotIndex == nil) then control.dataEntry.data.quality = 0 end
-
-    --get either the ZOS provided bagId or my assigned bagId(store, etc)
-    local bagId = control.dataEntry.data.bagId or control:GetParent():GetParent().bagId
-    local slotIndex = control.dataEntry.data.slotIndex or control.dataEntry.data.toolIndex
-    local quality = control.dataEntry.data.quality
-    local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, quality)
-
-    local alpha = 1
-    if(quality < minimumQuality) then
-        alpha = 0
-    end
-
-    control:GetNamedChild("Bg"):SetColor(r, g, b, 1)
-    control:GetNamedChild("Outline"):SetColor(r, g, b, alpha)
-    control:GetNamedChild("Highlight"):SetColor(r, g, b, 0)
-end
-
---control = ZO_PlayerInventoryBackpack1Row1 etc.
-local function ReshapeSlot(control, isGrid, isOutlines, width, height, forceUpdate)
-    if control == nil then return end
-
-    control:GetNamedChild("SellPrice"):SetHidden(isGrid)
-
-    if(control.isGrid ~= isGrid or forceUpdate) then
-        control.isGrid = isGrid
-        local thisName = control:GetName()
-
-        local button = control:GetNamedChild("Button")
-        local bg = control:GetNamedChild("Bg")
-        local new = control:GetNamedChild("Status")
-        local name = control:GetNamedChild("Name")
-        local stat = control:GetNamedChild("StatValue")
-        local sell = control:GetNamedChild("SellPrice")
-        local highlight = control:GetNamedChild("Highlight")
-        local outline = control:GetNamedChild("Outline")
-        if(not outline) then
-            outline = WINDOW_MANAGER:CreateControl(control:GetName() .. "Outline", control, CT_TEXTURE)
-            outline:SetAnchor(CENTER, control, CENTER)
-        end
-
-        button:ClearAnchors()
-        if new then new:ClearAnchors() end
-        control:SetDimensions(width, height)
-        button:SetDimensions(height * ICON_MULT, height * ICON_MULT)
-        outline:SetDimensions(height, height)
-
-        if(isGrid == true and new ~= nil) then
-            button:SetAnchor(CENTER, control, CENTER)
-
-            new:SetDimensions(5,5)
-            new:SetAnchor(TOPLEFT, control, TOPLEFT, 10, 10)
-
-            name:SetHidden(true)
-            stat:SetHidden(true)
-            highlight:SetTexture(TEXTURE_SET.HOVER)
-            highlight:SetTextureCoords(0, 1, 0, 1)
-
-            bg:SetTexture(TEXTURE_SET.BACKGROUND)
-            bg:SetTextureCoords(0, 1, 0, 1)
-            sell:SetAlpha(0)
-
-            if(isOutlines) then
-                outline:SetTexture(TEXTURE_SET.OUTLINE)
-                outline:SetHidden(false)
-            else
-                outline:SetHidden(true)
-            end
-            AddColor(control)
-
-            -- if(research) then
-            --     research:SetHidden(true)
-            -- end
-        else
-            button:SetAnchor(CENTER, control, TOPLEFT, 47, 26)
-
-            if new then new:SetAnchor(CENTER, control, TOPLEFT, 20, 27) end
-
-            name:SetHidden(false)
-            stat:SetHidden(false)
-            outline:SetHidden(true)
-
-            highlight:SetTexture(LIST_SLOT_HOVER)
-            highlight:SetColor(1, 1, 1, 0)
-            highlight:SetTextureCoords(0, 1, 0, .625)
-
-            bg:SetTexture(LIST_SLOT_BACKGROUND)
-            bg:SetTextureCoords(0, 1, 0, .8125)
-            bg:SetColor(1, 1, 1, 1)
-            sell:SetAlpha(1)
-        end
-    end
-end
-
-local function ReshapeSlots(self)
-    local allControlsParent = self:GetNamedChild("Contents")
-    local numControls = allControlsParent:GetNumChildren()
-
-    local width, height
-    if self.isGrid == true then
-        width = self.gridSize
-        height = self.gridSize
-    else
-        width = self.contentsWidth
-        height = self.listHeight
-    end
-
-    --BUYBACK and QUICKSLOT don't have the same child element pattern, have to start at 1 instead of 2
-    if self.bagId == INVENTORY_QUEST_ITEM or self.bagId == 6 or self.bagId == 7 then
-        for i = 1, numControls do
-            ReshapeSlot(allControlsParent:GetChild(i), self.isGrid, self.isOutlines, width, height, self.forceUpdate)
-        end
-
-        if(self.forceUpdate) then
-            for i = 1, numControls do
-               allControlsParent:GetChild(i).isGrid = self.isGrid
-            end
-
-            if(self.bagId == INVENTORY_QUEST_ITEM) then
-                for _,v in pairs(self.dataTypes[2].pool["m_Free"]) do
-                    ReshapeSlot(v, self.isGrid, self.isOutlines, width, height, self.forceUpdate)
-                end
-            else
-                for _,v in pairs(self.dataTypes[1].pool["m_Free"]) do
-                    ReshapeSlot(v, self.isGrid, self.isOutlines, width, height, self.forceUpdate)
-                end
-            end
-        end
-    else
-        for i = 2, numControls do
-            ReshapeSlot(allControlsParent:GetChild(i), self.isGrid, self.isOutlines, width, height, self.forceUpdate)
-        end
-
-        if(self.forceUpdate) then
-            for i = 2, numControls do
-                allControlsParent:GetChild(i).isGrid = self.isGrid
-            end
-            for _,v in pairs(self.dataTypes[1].pool["m_Free"]) do
-                ReshapeSlot(v, self.isGrid, self.isOutlines, width, height, self.forceUpdate)
-            end
-        end
-    end
-
-    self.forceUpdate = false
-end
---end util functions------------------------------------------------------------
-
---------------------------------------------------------------------------------
---the following functions are ported from ESO code because they're local and
---necessary to work correctly
---------------------------------------------------------------------------------
---scrolltemplates.lua line 143
+--[[----------------------------------------------------------------------------
+    GridViewController.lua
+    Author: ingeniousclown, Randactyl
+    This is mostly a re-implementation of ZO_ScrollList_UpdateScroll and copies
+    of the local functions and variables required to make it work. This file
+    also initializes all of the necessary fields to convert a list to grid view.
+--]]----------------------------------------------------------------------------
+--[[----------------------------------------------------------------------------
+    Ported ZOS code from esoui\libraries\zo_templates\scrolltemplates.lua
+--]]----------------------------------------------------------------------------
 local function UpdateScrollFade(useFadeGradient, scroll, slider, sliderValue)
     if(useFadeGradient) then
         local sliderMin, sliderMax = slider:GetMinMax()
@@ -202,19 +30,16 @@ local function UpdateScrollFade(useFadeGradient, scroll, slider, sliderValue)
     end
 end
 
---scrolltemplates.lua line 493
 local function AreSelectionsEnabled(self)
     return self.selectionTemplate or self.selectionCallback
 end
 
---scrolltemplates.lua line 661
 local function RemoveAnimationOnControl(control, animationFieldName)
     if control[animationFieldName] then
         control[animationFieldName]:PlayBackward()
     end
 end
 
---scrolltemplates.lua line 677
 local function UnhighlightControl(self, control)
     RemoveAnimationOnControl(control, "HighlightAnimation")
 
@@ -225,21 +50,12 @@ local function UnhighlightControl(self, control)
     end
 end
 
---scrolltemplates.lua line 693
 local function UnselectControl(self, control)
     RemoveAnimationOnControl(control, "SelectionAnimation")
 
     self.selectedControl = nil
 end
 
---scrolltemplates.lua line 821
---[[ZOS comment:
-    Determines if one piece of selected data is the "same" as the other. Used mainly to
-    keep an item selected even when the data for the list is updated if they share some
-    property determined by the equality function. For example, if you have an item with
-    id=1 and state=up and replace it with id=1 and state=down, the selection will be maintained
-    if the equality function only compares ids.
-  ]]
 local function AreDataEqualSelections(self, data1, data2)
     if(data1 == data2) then
         return true
@@ -261,7 +77,6 @@ local function AreDataEqualSelections(self, data1, data2)
     return false
 end
 
---scrolltemplates.lua line 906
 local function FreeActiveScrollListControl(self, i)
     local currentControl = self.activeControls[i]
     local currentDataEntry = currentControl.dataEntry
@@ -293,7 +108,6 @@ local function FreeActiveScrollListControl(self, i)
     self.activeControls[#self.activeControls] = nil
 end
 
---scrolltemplates.lua line 937
 local HIDE_SCROLLBAR = true
 local function ResizeScrollBar(self, scrollableDistance)
     local scrollBarHeight = self.scrollbar:GetHeight()
@@ -327,15 +141,20 @@ local function ResizeScrollBar(self, scrollableDistance)
         end
     end
 end
---end copied functions----------------------------------------------------------
-
---------------------------------------------------------------------------------
---modified version of function ZO_ScrollList_UpdateScroll(self)
---this is lightly modified to turn the view into a grid view
---from esoui\libraries\zo_templates\scrolltemplates.lua line 1292
---------------------------------------------------------------------------------
+--[[----------------------------------------------------------------------------
+    Modified version of ZO_ScrollList_UpdateScroll(self) from
+    esoui\libraries\zo_templates\scrolltemplates.lua
+--]]----------------------------------------------------------------------------
 local consideredMap = {}
-local function UpdateScroll_Grid(self)
+local function IGV_ScrollList_UpdateScroll_Grid(self)
+    --added---------------------------------------------------------------------
+    local function GetTopLeftTargetPosition(index, itemsPerRow, controlWidth, controlHeight, leftPadding, gridSpacing)
+        local controlTop = zo_floor((index-1) / itemsPerRow) * (controlHeight + gridSpacing)
+        local controlLeft = ((index-1) % itemsPerRow) * (controlWidth + gridSpacing) + leftPadding
+
+        return controlTop, controlLeft
+    end
+    ----------------------------------------------------------------------------
     local windowHeight = ZO_ScrollList_GetHeight(self)
     local controlHeight = self.gridSize
     local controlWidth = self.gridSize
@@ -459,39 +278,253 @@ local function UpdateScroll_Grid(self)
     for k,v in pairs(consideredMap) do
         consideredMap[k] = nil
     end
+end
+--[[----------------------------------------------------------------------------
+    Modified version of ZO_ItemTooltip_AddMoney(...) from
+    esoui\ingame\tooltip\tooltip.lua
+--]]----------------------------------------------------------------------------
+--added currencyType parameter
+function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, currencyType)
+    local moneyLine = GetControl(tooltipControl, "SellPrice")
+    local reasonLabel = GetControl(moneyLine, "Reason")
+    local currencyControl = GetControl(moneyLine, "Currency")
 
     --added---------------------------------------------------------------------
-    --reshape the slots to finish the illusion
-    --this is done in the toggle function, but this ensures that any NEW slots get reshaped
-    ReshapeSlots(self)
+    local currencyType = currencyType or CURT_MONEY
+    --these is also from tooltip.lua, outside the function
+    local SELL_REASON_COLOR = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_TOOLTIP, ITEM_TOOLTIP_COLOR_SELLS_FOR))
+    local REASON_CURRENCY_SPACING = 3
+    local MONEY_LINE_HEIGHT = 18
+    local ITEM_TOOLTIP_CURRENCY_OPTIONS = { showTooltips = false }
     ----------------------------------------------------------------------------
-end
---end modified ZOS functions----------------------------------------------------
 
---------------------------------------------------------------------------------
---functions to set up and toggle the grid view
---------------------------------------------------------------------------------
-function InventoryGridView_ToggleOutlines(self, toggle)
-    self.isOutlines = toggle
-    self.forceUpdate = self.isGrid
+    moneyLine:SetHidden(false)
 
-    --no need to update if current in list view
-    if not self.forceUpdate then return end
+    local width = 0
+    reasonLabel:ClearAnchors()
+    currencyControl:ClearAnchors()
 
-    while(#self.activeControls > 0) do
-        FreeActiveScrollListControl(self, 1)
-    end
+     -- right now reason is always a string index
+    if(reason and reason ~= 0) then
+        reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
+        currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING, -2)
 
-    if(self.isGrid) then
-        UpdateScroll_Grid(self)
+        reasonLabel:SetHidden(false)
+        reasonLabel:SetColor(SELL_REASON_COLOR:UnpackRGBA())
+        reasonLabel:SetText(GetString(reason))
+
+        local reasonTextWidth, reasonTextHeight = reasonLabel:GetTextDimensions()
+        width = width + reasonTextWidth + REASON_CURRENCY_SPACING
     else
-        ZO_ScrollList_UpdateScroll(self)
+        reasonLabel:SetHidden(true)
+        currencyControl:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
     end
 
-    ReshapeSlots(self)
+    if(amount > 0) then
+        currencyControl:SetHidden(false)
+        --modified--------------------------------------------------------------
+        ZO_CurrencyControl_SetSimpleCurrency(currencyControl, currencyType,
+            amount, ITEM_TOOLTIP_CURRENCY_OPTIONS, CURRENCY_DONT_SHOW_ALL, notEnough)
+        ------------------------------------------------------------------------
+        width = width + currencyControl:GetWidth()
+    else
+        currencyControl:SetHidden(true)
+    end
+
+    tooltipControl:AddControl(moneyLine)
+    moneyLine:SetAnchor(CENTER)
+    moneyLine:SetDimensions(width, MONEY_LINE_HEIGHT)
+end
+--[[----------------------------------------------------------------------------
+    Our own code
+--]]----------------------------------------------------------------------------
+local MIN_QUALITY = ITEM_QUALITY_TRASH
+local TEXTURE_SET = nil
+
+local function AddColor(control)
+    if(not control.dataEntry) then return end
+    if(control.dataEntry.data.slotIndex == nil) then control.dataEntry.data.quality = 0 end
+
+    local quality = control.dataEntry.data.quality
+    local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, quality)
+
+    local alpha = 1
+    if(quality < MIN_QUALITY) then
+        alpha = 0
+    end
+
+    control:GetNamedChild("Bg"):SetColor(r, g, b, 1)
+    control:GetNamedChild("Outline"):SetColor(r, g, b, alpha)
+    control:GetNamedChild("Highlight"):SetColor(r, g, b, 0)
 end
 
---interface to toggle grid view on and off
+--control = ZO_PlayerInventoryBackpack1Row1 etc.
+local function ReshapeSlot(control, isGrid, isOutlines, width, height, forceUpdate)
+    if control == nil then return end
+
+    local LIST_SLOT_BACKGROUND = [[EsoUI/Art/Miscellaneous/listItem_backdrop.dds]]
+    local LIST_SLOT_HOVER = [[EsoUI/Art/Miscellaneous/listitem_highlight.dds]]
+    local ICON_MULT = 0.77
+
+    control:GetNamedChild("SellPrice"):SetHidden(isGrid)
+
+    if(control.isGrid ~= isGrid or forceUpdate) then
+        control.isGrid = isGrid
+        local thisName = control:GetName()
+
+        local button = control:GetNamedChild("Button")
+        local bg = control:GetNamedChild("Bg")
+        local new = control:GetNamedChild("Status")
+        local name = control:GetNamedChild("Name")
+        local stat = control:GetNamedChild("StatValue")
+        local sell = control:GetNamedChild("SellPrice")
+        local highlight = control:GetNamedChild("Highlight")
+        local outline = control:GetNamedChild("Outline")
+        if(not outline) then
+            outline = WINDOW_MANAGER:CreateControl(control:GetName() .. "Outline", control, CT_TEXTURE)
+            outline:SetAnchor(CENTER, control, CENTER)
+        end
+
+        button:ClearAnchors()
+        if new then new:ClearAnchors() end
+        control:SetDimensions(width, height)
+        button:SetDimensions(height * ICON_MULT, height * ICON_MULT)
+        outline:SetDimensions(height, height)
+
+        if(isGrid == true and new ~= nil) then
+            button:SetAnchor(CENTER, control, CENTER)
+
+            new:SetDimensions(5,5)
+            new:SetAnchor(TOPLEFT, control, TOPLEFT, 10, 10)
+
+            name:SetHidden(true)
+            stat:SetHidden(true)
+            highlight:SetTexture(TEXTURE_SET.HOVER)
+            highlight:SetTextureCoords(0, 1, 0, 1)
+
+            bg:SetTexture(TEXTURE_SET.BACKGROUND)
+            bg:SetTextureCoords(0, 1, 0, 1)
+            sell:SetAlpha(0)
+
+            if(isOutlines) then
+                outline:SetTexture(TEXTURE_SET.OUTLINE)
+                outline:SetHidden(false)
+            else
+                outline:SetHidden(true)
+            end
+            AddColor(control)
+
+            -- if(research) then
+            --     research:SetHidden(true)
+            -- end
+        else
+            button:SetAnchor(CENTER, control, TOPLEFT, 47, 26)
+
+            if new then new:SetAnchor(CENTER, control, TOPLEFT, 20, 27) end
+
+            name:SetHidden(false)
+            stat:SetHidden(false)
+            outline:SetHidden(true)
+
+            highlight:SetTexture(LIST_SLOT_HOVER)
+            highlight:SetColor(1, 1, 1, 0)
+            highlight:SetTextureCoords(0, 1, 0, .625)
+
+            bg:SetTexture(LIST_SLOT_BACKGROUND)
+            bg:SetTextureCoords(0, 1, 0, .8125)
+            bg:SetColor(1, 1, 1, 1)
+            sell:SetAlpha(1)
+        end
+    end
+end
+
+local function ReshapeSlots(self)
+    local allControlsParent = self:GetNamedChild("Contents")
+    local numControls = allControlsParent:GetNumChildren()
+
+    local width, height
+    if self.isGrid == true then
+        width = self.gridSize
+        height = self.gridSize
+    else
+        width = self.contentsWidth
+        height = self.listHeight
+    end
+
+    --BUYBACK and QUICKSLOT don't have the same child element pattern, have to start at 1 instead of 2
+    if self.IGVId == INVENTORY_QUEST_ITEM or self.IGVId == 6 or self.IGVId == 7 then
+        for i = 1, numControls do
+            ReshapeSlot(allControlsParent:GetChild(i), self.isGrid, self.isOutlines, width, height, self.forceUpdate)
+        end
+
+        if(self.forceUpdate) then
+            for i = 1, numControls do
+               allControlsParent:GetChild(i).isGrid = self.isGrid
+            end
+
+            if(self.IGVId == INVENTORY_QUEST_ITEM) then
+                for _,v in pairs(self.dataTypes[2].pool["m_Free"]) do
+                    ReshapeSlot(v, self.isGrid, self.isOutlines, width, height, self.forceUpdate)
+                end
+            else
+                for _,v in pairs(self.dataTypes[1].pool["m_Free"]) do
+                    ReshapeSlot(v, self.isGrid, self.isOutlines, width, height, self.forceUpdate)
+                end
+            end
+        end
+    else
+        for i = 2, numControls do
+            ReshapeSlot(allControlsParent:GetChild(i), self.isGrid, self.isOutlines, width, height, self.forceUpdate)
+        end
+
+        if(self.forceUpdate) then
+            for i = 2, numControls do
+                allControlsParent:GetChild(i).isGrid = self.isGrid
+            end
+            for _,v in pairs(self.dataTypes[1].pool["m_Free"]) do
+                ReshapeSlot(v, self.isGrid, self.isOutlines, width, height, self.forceUpdate)
+            end
+        end
+    end
+
+    self.forceUpdate = false
+end
+
+function InventoryGridView_ToggleOutlines(toggle)
+    local bags = {
+        [1] = ZO_PlayerInventoryBackpack,
+        [2] = ZO_PlayerInventoryQuest,
+        [3] = ZO_PlayerBankBackpack,
+        [4] = ZO_GuildBankBackpack,
+        [5] = ZO_StoreWindowList,
+        [6] = ZO_BuyBackList,
+        [7] = ZO_QuickSlotList,
+        --[8] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
+    }
+
+    for _, self in ipairs(bags) do
+        self.isOutlines = toggle
+        self.forceUpdate = self.isGrid
+
+        --no need to update if current in list view
+        if not self.forceUpdate then return end
+
+        while(#self.activeControls > 0) do
+            FreeActiveScrollListControl(self, 1)
+        end
+
+        if(self.isGrid) then
+            IGV_ScrollList_UpdateScroll_Grid(self)
+            --this is done in the toggle function, but this ensures that any NEW slots get reshaped
+            ReshapeSlots(self)
+        else
+            ZO_ScrollList_UpdateScroll(self)
+        end
+
+        ReshapeSlots(self)
+    end
+end
+
 function InventoryGridView_ToggleGrid(self, toggle)
     self.isGrid = toggle
     self.forceUpdate = true
@@ -503,7 +536,9 @@ function InventoryGridView_ToggleGrid(self, toggle)
     end
 
     if(toggle) then
-        UpdateScroll_Grid(self)
+        IGV_ScrollList_UpdateScroll_Grid(self)
+        --this is done in the toggle function, but this ensures that any NEW slots get reshaped
+        ReshapeSlots(self)
     else
         ZO_ScrollList_UpdateScroll(self)
         ResizeScrollBar(self, (#self.data * self.controlHeight) - ZO_ScrollList_GetHeight(self))
@@ -513,81 +548,6 @@ function InventoryGridView_ToggleGrid(self, toggle)
     ReshapeSlots(self)
 end
 
---hook function!  to be called before "ZO_ScrollList_UpdateScroll"
---thanks to Seerah for teaching me about this possibility
-local function ScrollController(self)
-    if(self.isGrid) then
-        UpdateScroll_Grid(self)
-        return true
-    else
-        return false
-    end
-end
-
---function to set custom icon scaling
-local function CreateSlotAnimation(inventorySlot)
-    if inventorySlot.slotControlType == "listSlot" and inventorySlot.isGrid == true then
-        local control = inventorySlot
-        local controlType = inventorySlot:GetType()
-
-        if (controlType == CT_CONTROL and control.slotControlType == "listSlot") then
-            control = inventorySlot:GetNamedChild("MultiIcon") or inventorySlot:GetNamedChild("Button")
-        end
-
- 		--want to force refresh of control animation
-        if (control --[[and not control.animation]]) then
-            control.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", control)
-            control.animation:GetFirstAnimation():SetEndScale(SHARED_INVENTORY.IGViconZoomLevel)
-        end
-    end
-end
-
---function to set tooltip offset
-local function igvTooltipAnchor(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
-    -- call the regular one, not ideal but probably better than copying most of the code here :)
-    ZO_Tooltips_SetupDynamicTooltipAnchors(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
-    -- custom setup
-    tooltip:ClearAnchors()
-    if InventoryGridViewSettings:IsTooltipOffset() and buttonPart:GetParent().isGrid then
-        local anchorPoint = buttonPart:GetParent()
-        local gridSize = InventoryGridViewSettings:GetGridSize()
-        local edge = ZO_PlayerInventoryBackpackContents:GetLeft()
-        local col = ((anchorPoint:GetLeft() - edge) / gridSize) + 1
-        local offsetX = -(gridSize * col - gridSize)
-        tooltip:SetOwner(anchorPoint, RIGHT, offsetX, 0)
-    else
-        tooltip:SetOwner(anchorPoint, RIGHT, 0, 0)
-    end
-end
-
---add necessary fields to the default UI's controls to facilitate the grid view
---and hook necessary functions for operation.
-function InitGridView(isGrid)
-    ZO_PreHook("ZO_ScrollList_UpdateScroll", ScrollController)
-    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
-
-    local function prepListView(listView)
-        if listView and listView.dataTypes and listView.dataTypes[1] then
-            local hookedFunctions = listView.dataTypes[1].setupCallback
-
-            listView.dataTypes[1].setupCallback =
-                function(rowControl, slot)
-                    rowControl.isGrid = isGrid
-                    rowControl:GetNamedChild("Button").customTooltipAnchor = igvTooltipAnchor
-                    hookedFunctions(rowControl, slot)
-                end
-        end
-    end
-    for _,v in pairs(PLAYER_INVENTORY.inventories) do
-        prepListView(v.listView)
-    end
-    prepListView(ZO_StoreWindowList)
-    prepListView(ZO_BuyBackList)
-    prepListView(ZO_QuickSlotList)
-end
---end setup functions-----------------------------------------------------------
-
---Needed for IGVSettings--------------------------------------------------------
 function InventoryGridView_SetMinimumQuality(quality, forceUpdate)
     minimumQuality = quality
     ZO_PlayerInventoryBackpack.forceUpdate = forceUpdate or false
@@ -615,4 +575,110 @@ function InventoryGridView_SetTextureSet(textureSet, forceUpdate)
     ReshapeSlots(ZO_StoreWindowList)
     --ReshapeSlots(ZO_BuyBackList)
 end
---end IGVSettings functions-----------------------------------------------------
+
+--init the grid view data
+do
+    --function to set tooltip offset
+    local function igvTooltipAnchor(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
+        -- call the regular one, not ideal but probably better than copying most of the code here :)
+        ZO_Tooltips_SetupDynamicTooltipAnchors(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
+        -- custom setup
+        tooltip:ClearAnchors()
+        if InventoryGridViewSettings:IsTooltipOffset() and buttonPart:GetParent().isGrid then
+            local anchorPoint = buttonPart:GetParent()
+            local gridSize = InventoryGridViewSettings:GetGridSize()
+            local edge = ZO_PlayerInventoryBackpackContents:GetLeft()
+            local col = ((anchorPoint:GetLeft() - edge) / gridSize) + 1
+            local offsetX = -(gridSize * col - gridSize)
+            tooltip:SetOwner(anchorPoint, RIGHT, offsetX, 0)
+        else
+            tooltip:SetOwner(anchorPoint, RIGHT, 0, 0)
+        end
+    end
+    local function prepListView(listView)
+        if listView and listView.dataTypes and listView.dataTypes[1] then
+            local hookedFunctions = listView.dataTypes[1].setupCallback
+
+            listView.dataTypes[1].setupCallback =
+                function(rowControl, slot)
+                    rowControl.isGrid = nil
+                    rowControl:GetNamedChild("Button").customTooltipAnchor = igvTooltipAnchor
+                    hookedFunctions(rowControl, slot)
+                end
+        end
+    end
+    --hook function!  to be called before "ZO_ScrollList_UpdateScroll"
+    --thanks to Seerah for teaching me about this possibility
+    local function ScrollController(self)
+        if(self.isGrid) then
+            IGV_ScrollList_UpdateScroll_Grid(self)
+            --this is done in the toggle function, but this ensures that any NEW slots get reshaped
+            ReshapeSlots(self)
+            return true
+        else
+            return false
+        end
+    end
+    --function to set custom icon scaling
+    local function CreateSlotAnimation(inventorySlot)
+        if inventorySlot.slotControlType == "listSlot" and inventorySlot.isGrid == true then
+            local control = inventorySlot
+            local controlType = inventorySlot:GetType()
+
+            if (controlType == CT_CONTROL and control.slotControlType == "listSlot") then
+                control = inventorySlot:GetNamedChild("MultiIcon") or inventorySlot:GetNamedChild("Button")
+            end
+
+     		--want to force refresh of control animation
+            if (control --[[and not control.animation]]) then
+                control.animation = ANIMATION_MANAGER:CreateTimelineFromVirtual("IconSlotMouseOverAnimation", control)
+                control.animation:GetFirstAnimation():SetEndScale(SHARED_INVENTORY.IGViconZoomLevel)
+            end
+        end
+    end
+    local function AddCurrency(rowControl)
+        if(not rowControl.dataEntry) then return end
+
+        local IGVId = rowControl.dataEntry.data.bagId or rowControl:GetParent():GetParent().IGVId
+        local slotIndex = rowControl.dataEntry.data.slotIndex
+        local _, stack, sellPrice, currencyType, notEnough
+
+        if IGVId == ZO_StoreWindowList.IGVId or IGVId == ZO_BuyBackList.IGVId then
+            for _,v in pairs(rowControl:GetNamedChild("SellPrice").currencyArgs) do
+                if(v.isUsed == true) then
+                    currencyType = v.type
+                    notEnough = v.notEnough
+                end
+            end
+
+            if currencyType == CURT_MONEY then
+                sellPrice = rowControl.dataEntry.data.price
+            else
+                sellPrice = rowControl.dataEntry.data.currencyQuantity1
+            end
+
+            stack = rowControl.dataEntry.data.stack
+            ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack, 0, notEnough, currencyType)
+        else
+            _, stack, sellPrice = GetItemInfo(IGVId, slotIndex)
+            ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack)
+        end
+    end
+    local function AddCurrencySoon(rowControl)
+        if(rowControl:GetParent():GetParent().IGVId == INVENTORY_QUEST_ITEM) then return end
+        if(rowControl and rowControl.isGrid) then
+            zo_callLater(function() AddCurrency(rowControl) end, 50)
+        end
+    end
+
+    for _,v in pairs(PLAYER_INVENTORY.inventories) do
+        prepListView(v.listView)
+    end
+    prepListView(ZO_StoreWindowList)
+    prepListView(ZO_BuyBackList)
+    prepListView(ZO_QuickSlotList)
+
+    ZO_PreHook("ZO_ScrollList_UpdateScroll", ScrollController)
+    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
+    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
+end
