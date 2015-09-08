@@ -11,39 +11,11 @@ local BUYBACK = ZO_BuyBackList				                          --IGVId = 6
 local QUICKSLOT = ZO_QuickSlotList                                    --IGVId = 7
 --local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --IGVId = 8
 
-local SKIN_CHOICES = { "Classic", "Rushmik", "Clean: by Tonyleila", "Circles: by Tonyleila", }
-
-local TEXTURES = {
-	["Classic"] = {
-		BACKGROUND = "InventoryGridView/assets/griditem_background.dds", --set to black?
-		OUTLINE = "InventoryGridView/assets/griditem_outline.dds",
-		HOVER = "InventoryGridView/assets/griditem_hover.dds",
-		TOGGLE = "InventoryGridView/assets/grid_view_toggle_button.dds",
-	},
-	["Rushmik"] = {
-		BACKGROUND = "InventoryGridView/assets/rushmik_background.dds",
-		OUTLINE = "InventoryGridView/assets/rushmik_outline.dds",
-		HOVER = "InventoryGridView/assets/rushmik_background.dds",
-		TOGGLE = "InventoryGridView/assets/grid_view_toggle_button.dds",
-	},
-	["Clean: by Tonyleila"] = {
-		BACKGROUND = "InventoryGridView/assets/tonyleila_background.dds",
-		OUTLINE = "InventoryGridView/assets/tonyleila_outline.dds",
-		HOVER = "InventoryGridView/assets/tonyleila_hover.dds",
-		TOGGLE = "InventoryGridView/assets/tonyleila_toggle_button.dds",
-	},
-	["Circles: by Tonyleila"] = {
-		BACKGROUND = "InventoryGridView/assets/circle_background.dds",
-		OUTLINE = "InventoryGridView/assets/circle_outline.dds",
-		HOVER = "InventoryGridView/assets/circle_hover.dds",
-		TOGGLE = "InventoryGridView/assets/circle_toggle_button.dds",
-	},
-}
-
+local skinChoices = {}
+local skins = {}
 local QUALITY_OPTIONS = {
 	"Trash", "Normal", "Magic", "Arcane", "Artifact", "Legendary",
 }
-
 local QUALITY = {
 	["Trash"] = ITEM_QUALITY_TRASH,
 	["Normal"] = ITEM_QUALITY_NORMAL,
@@ -81,7 +53,7 @@ function InventoryGridViewSettings:Initialize()
     settings = ZO_SavedVars:NewAccountWide("InventoryGridView_Settings", 3, nil, defaults)
     self:CreateOptionsMenu()
 	InventoryGridView_SetMinimumQuality(QUALITY[settings.minimumQuality])
-	InventoryGridView_SetTextureSet(TEXTURES[settings.skinChoice])
+	InventoryGridView_SetTextureSet(skins[settings.skinChoice])
 end
 
 function InventoryGridViewSettings:CreateOptionsMenu()
@@ -125,12 +97,12 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 			type = "dropdown",
 			name = "Skin",
 			tooltip = "Which skin would you like to use for Grid View?",
-			choices = SKIN_CHOICES,
+			choices = skinChoices,
 			getFunc = function() return settings.skinChoice end,
 			setFunc = function(value)
 				settings.skinChoice = value
 				local textureSet = self.GetTextureSet()
-				InventoryGridView_SetTextureSet(TEXTURES[value], true)
+				InventoryGridView_SetTextureSet(skins[value], true)
 				ex_bg:SetTexture(textureSet.BACKGROUND)
 				ex_outline:SetTexture(textureSet.OUTLINE)
 				ex_hover:SetTexture(textureSet.HOVER)
@@ -262,10 +234,10 @@ function InventoryGridViewSettings:GetGridSize()
 end
 
 function InventoryGridViewSettings:GetTextureSet()
-	if TEXTURES[settings.skinChoice] == nil then
+	if skins[settings.skinChoice] == nil then
 		settings.skinChoice = "Rushmik"
 	end
-	return TEXTURES[settings.skinChoice]
+	return skins[settings.skinChoice]
 end
 
 function InventoryGridViewSettings:GetIconZoomLevel()
@@ -276,14 +248,12 @@ function InventoryGridViewSettings:IsTooltipOffset()
 	return settings.isTooltipOffset
 end
 
-
-
 function InventoryGridView_RegisterSkin(name, background, outline, highlight, toggle)
-	table.insert(SKIN_CHOICES, name)
-	TEXTURES[name] = {
-		BACKGROUND = background or "InventoryGridView/assets/griditem_background.dds",
-		OUTLINE = outline or "InventoryGridView/assets/griditem_outline.dds",
-		HOVER = highlight or "InventoryGridView/assets/griditem_hover.dds",
-		TOGGLE = toggle or "InventoryGridView/assets/grid_view_toggle_button.dds",
+	table.insert(skinChoices, name)
+	skins[name] = {
+		BACKGROUND = background or "InventoryGridView/skins/Classic/classic_background.dds",
+		OUTLINE = outline or "InventoryGridView/skins/Classic/classic_outline.dds",
+		HOVER = highlight or "InventoryGridView/skins/Classic/classic_hover.dds",
+		TOGGLE = toggle or "InventoryGridView/skins/Classic/classic_toggle_button.dds",
 	}
 end

@@ -22,3 +22,8 @@ lib\LibAddonMenu-2.0\controls\texture.lua
 InventoryGridViewSettings.lua
 InventoryGridView.lua
 GridViewController.lua
+
+skins\Classic\classic.lua
+skins\Rushmik\rushmik.lua
+skins\Circles\circles.lua
+skins\Clean\clean.lua
