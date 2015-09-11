@@ -2,14 +2,14 @@ local LAM = LibStub("LibAddonMenu-2.0")
 InventoryGridViewSettings = ZO_Object:Subclass()
 local settings = nil
 
-local BAGS = ZO_PlayerInventoryBackpack		                          --IGVId = 1
-local QUEST = ZO_PlayerInventoryQuest		                          --IGVId = 2
-local BANK = ZO_PlayerBankBackpack			                          --IGVId = 3
-local GUILD_BANK = ZO_GuildBankBackpack		                          --IGVId = 4
-local STORE = ZO_StoreWindowList			                          --IGVId = 5
-local BUYBACK = ZO_BuyBackList				                          --IGVId = 6
-local QUICKSLOT = ZO_QuickSlotList                                    --IGVId = 7
---local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack    --IGVId = 8
+local BAGS = ZO_PlayerInventoryBackpack		                         --IGVId = 1
+local QUEST = ZO_PlayerInventoryQuest		                         --IGVId = 2
+local BANK = ZO_PlayerBankBackpack			                         --IGVId = 3
+local GUILD_BANK = ZO_GuildBankBackpack		                         --IGVId = 4
+local STORE = ZO_StoreWindowList			                         --IGVId = 5
+local BUYBACK = ZO_BuyBackList				                         --IGVId = 6
+local QUICKSLOT = ZO_QuickSlotList                                   --IGVId = 7
+--local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack   --IGVId = 8
 
 local skinChoices = {}
 local skins = {}
