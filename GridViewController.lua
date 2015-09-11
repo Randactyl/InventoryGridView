@@ -652,6 +652,8 @@ do
             else
                 sellPrice = rowControl.dataEntry.data.currencyQuantity1
             end
+            --bandaid catch all for sellPrice == nil
+            sellPrice = sellPrice or 0
 
             stack = rowControl.dataEntry.data.stack
             ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack, 0, notEnough, currencyType)
