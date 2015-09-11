@@ -1,6 +1,7 @@
 local LAM = LibStub("LibAddonMenu-2.0")
 InventoryGridViewSettings = ZO_Object:Subclass()
 local settings = nil
+local addonVersion = "1.5.1.0"
 
 local BAGS = ZO_PlayerInventoryBackpack		                         --IGVId = 1
 local QUEST = ZO_PlayerInventoryQuest		                         --IGVId = 2
@@ -87,7 +88,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 		type = "panel",
 		name = "Inventory Grid View",
 		author = "ingeniousclown and Randactyl",
-		version = "1.5.0.0",
+		version = addonVersion,
 		slashCommand = "/inventorygridview",
 		registerForRefresh = true,
 		--registerForDefaults = true,
