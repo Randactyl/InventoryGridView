@@ -579,16 +579,13 @@ do
         -- call the regular one, not ideal but probably better than copying most of the code here :)
         ZO_Tooltips_SetupDynamicTooltipAnchors(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
         -- custom setup
-        tooltip:ClearAnchors()
-        if InventoryGridViewSettings:IsTooltipOffset() and buttonPart:GetParent().isGrid then
-            local anchorPoint = buttonPart:GetParent()
-            local gridSize = InventoryGridViewSettings:GetGridSize()
-            local edge = ZO_PlayerInventoryBackpackContents:GetLeft()
-            local col = ((anchorPoint:GetLeft() - edge) / gridSize) + 1
-            local offsetX = -(gridSize * col - gridSize)
-            tooltip:SetOwner(anchorPoint, RIGHT, offsetX, 0)
+        if InventoryGridView_IsTooltipOffset() and buttonPart:GetParent().isGrid then
+            tooltip:ClearAnchors()
+            local owner = buttonPart:GetParent():GetParent()
+            tooltip:SetOwner(owner, RIGHT, 0, -10)
         else
-            tooltip:SetOwner(anchorPoint, RIGHT, 0, 0)
+            local owner = buttonPart:GetParent()
+            tooltip:SetOwner(owner, RIGHT, 0, 0)
         end
     end
     local function prepListView(listView)

@@ -18,6 +18,10 @@ function InventoryGridView_SetToggleButtonTexture()
     end
 end
 
+function InventoryGridView_IsTooltipOffset()
+    return IGVSettings:IsTooltipOffset()
+end
+
 local function ButtonClickHandler(button)
     IGVSettings:ToggleGrid(button.IGVId)
 
