@@ -1,7 +1,7 @@
 local LAM = LibStub("LibAddonMenu-2.0")
 InventoryGridViewSettings = ZO_Object:Subclass()
 local settings = nil
-local addonVersion = "1.5.2.0"
+local addonVersion = "1.5.2.1"
 
 local BAGS = ZO_PlayerInventoryBackpack		                         --IGVId = 1
 local QUEST = ZO_PlayerInventoryQuest		                         --IGVId = 2
