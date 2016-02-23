@@ -1,6 +1,6 @@
 ## Title: Inventory Grid View
 ## Author: Randactyl, ingeniousclown
-## Version: 1.5.2.1
+## Version: 1.5.3.0
 ## APIVersion: 100013
 ## SavedVariables: InventoryGridView_Settings
 
