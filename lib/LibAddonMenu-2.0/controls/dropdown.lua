@@ -14,7 +14,7 @@
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -114,7 +114,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 		control.warning.data = {tooltipText = dropdownData.warning}
 	end
 
-	if dropdownData.disabled then
+	if dropdownData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end

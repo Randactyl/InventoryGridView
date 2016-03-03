@@ -4,7 +4,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 18
+local MAJOR, MINOR = "LibAddonMenu-2.0", 19
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory
 
@@ -61,7 +61,9 @@ local function CreateBaseControl(parent, controlData, controlName)
 	control.data = controlData
 
 	control.isHalfWidth = controlData.width == "half"
-	control:SetWidth(control.panel:GetWidth() - 60)
+	local width = 510 -- set default width in case a custom parent object is passed
+	if control.panel.GetWidth ~= nil then width = control.panel:GetWidth() - 60 end
+	control:SetWidth(width)
 	return control
 end
 
@@ -282,6 +284,30 @@ function lam:OpenToPanel(panel)
 	end
 end
 
+local TwinOptionsContainer_Index = 0
+local function TwinOptionsContainer(parent, leftWidget, rightWidget)
+	TwinOptionsContainer_Index = TwinOptionsContainer_Index + 1
+	local cParent = parent.scroll or parent
+	local panel = parent.panel or cParent
+	local container = wm:CreateControl("$(parent)TwinContainer" .. tostring(TwinOptionsContainer_Index),
+										cParent, CT_CONTROL)
+	container:SetResizeToFitDescendents(true)
+	container:SetAnchor(select(2, leftWidget:GetAnchor(0) ))
+
+	leftWidget:ClearAnchors()
+	leftWidget:SetAnchor(TOPLEFT, container, TOPLEFT)
+	rightWidget:SetAnchor(TOPLEFT, leftWidget, TOPRIGHT, 5, 0)
+
+	leftWidget:SetWidth( leftWidget:GetWidth() - 2.5 ) -- fixes bad alignment with 'full' controls
+	rightWidget:SetWidth( rightWidget:GetWidth() - 2.5 )
+
+	leftWidget:SetParent(container)
+	rightWidget:SetParent(container)
+
+	container.data = {type = "container"}
+	container.panel = panel
+	return container
+end
 
 --INTERNAL FUNCTION
 --creates controls when options panel is first shown
@@ -302,12 +328,12 @@ local function CreateOptionsControls(panel)
 					widget:SetAnchor(TOPLEFT)
 					anchorTarget = widget
 				elseif wasHalf and isHalf then -- when the previous widget was only half width and this one is too, we place it on the right side
-					widget:SetAnchor(TOPLEFT, anchorTarget, TOPRIGHT, 5 + (offsetX or 0), 0)
 					widget.lineControl = anchorTarget
-					offsetY = zo_max(0, widget:GetHeight() - anchorTarget:GetHeight()) -- we need to get the common height of both widgets to know where the next row starts
 					isHalf = false
+					offsetY = 0
+					anchorTarget = TwinOptionsContainer(parent, anchorTarget, widget)
 				else -- otherwise we just put it below the previous one normally
-					widget:SetAnchor(TOPLEFT, anchorTarget, BOTTOMLEFT, 0, 15 + offsetY)
+					widget:SetAnchor(TOPLEFT, anchorTarget, BOTTOMLEFT, 0, 15)
 					offsetY = 0
 					anchorTarget = widget
 				end

@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 7
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -95,7 +95,7 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 
 	control.data.tooltipText = LAM.util.GetTooltipText(colorpickerData.tooltip)
 
-	if colorpickerData.disabled then
+	if colorpickerData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end

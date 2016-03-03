@@ -5,6 +5,7 @@
 	min = 0,
 	max = 20,
 	step = 1,	--(optional)
+	decimals = 0, --(optional)
 	getFunc = function() return db.var end,
 	setFunc = function(value) db.var = value doStuff() end,
 	width = "full",	--or "half" (optional)
@@ -15,7 +16,7 @@
 }	]]
 
 
-local widgetVersion = 7
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -123,17 +124,25 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			self:LoseFocus()
 			control:UpdateValue(false, tonumber(self:GetText()))
 		end)
-
+	local function RoundDecimalToPlace(d, place)
+		return tonumber(string.format("%." .. tostring(place) .. "f", d))
+	end
 	local range = maxValue - minValue
 	slider:SetValueStep(sliderData.step or 1)
 	slider:SetHandler("OnValueChanged", function(self, value, eventReason)
 			if eventReason == EVENT_REASON_SOFTWARE then return end
-			self:SetValue(value)	--do we actually need this line?
-			slidervalue:SetText(value)
+			local new_value = sliderData.decimals and RoundDecimalToPlace(value, sliderData.decimals) or value
+			self:SetValue(new_value)	--do we actually need this line?
+			slidervalue:SetText(new_value)
 		end)
 	slider:SetHandler("OnSliderReleased", function(self, value)
 			--sliderData.setFunc(value)
-			control:UpdateValue(false, value)	--does this work here instead?
+			local new_value = sliderData.decimals and RoundDecimalToPlace(value, sliderData.decimals) or value
+			control:UpdateValue(false, new_value)	--does this work here instead?
+		end)
+	slider:SetHandler("OnMouseWheel", function(self, value)
+			local new_value = (tonumber(slidervalue:GetText()) or sliderData.min or 0) + ((sliderData.step or 1) * value)
+			control:UpdateValue(false, new_value)
 		end)
 
 	if sliderData.warning then
@@ -142,7 +151,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 		control.warning.data = {tooltipText = sliderData.warning}
 	end
 
-	if sliderData.disabled then
+	if sliderData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end

@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -129,7 +129,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 
 	control.data.tooltipText = LAM.util.GetTooltipText(checkboxData.tooltip)
 
-	if checkboxData.disabled then
+	if checkboxData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end
