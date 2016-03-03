@@ -359,31 +359,37 @@ local function AddColor(control)
 end
 
 --control = ZO_PlayerInventoryBackpack1Row1 etc.
+local oldSetHidden
 local function ReshapeSlot(control, isGrid, isOutlines, width, height, forceUpdate)
     if control == nil then return end
 
     local ICON_MULT = 0.77
 
-    --show/hide sell price label
-    local sell = control:GetNamedChild("SellPrice")
-    sell:SetHidden(isGrid)
-    --make sure sell price label stays hidden
-    local oldSetHidden = sell.SetHidden
-    sell.SetHidden = function(sell, shouldHide)
-        if isGrid then return end
-        oldSetHidden(sell, shouldHide)
-    end
-
     if control.isGrid ~= isGrid or forceUpdate then
         control.isGrid = isGrid
 
-        local button = control:GetNamedChild("Button")
         local bg = control:GetNamedChild("Bg")
-        local new = control:GetNamedChild("Status")
-        local name = control:GetNamedChild("Name")
-        local stat = control:GetNamedChild("StatValue")
         local highlight = control:GetNamedChild("Highlight")
         local outline = control:GetNamedChild("Outline")
+        local new = control:GetNamedChild("Status")
+        local button = control:GetNamedChild("Button")
+        local name = control:GetNamedChild("Name")
+        local sell = control:GetNamedChild("SellPrice")
+        local stat = control:GetNamedChild("StatValue")
+
+        --make sure sell price label stays shown/hidden
+        if not oldSetHidden then oldSetHidden = sell.SetHidden end
+        sell.SetHidden = function(sell, shouldHide)
+            if isGrid and shouldHide then
+                oldSetHidden(sell, shouldHide)
+            elseif isGrid then
+                return
+            else
+                oldSetHidden(sell, shouldHide)
+            end
+        end
+        --show/hide sell price label
+        sell:SetHidden(isGrid)
 
         --create outline texture for control if missing
         if not outline then
@@ -599,12 +605,11 @@ do
         if listView and listView.dataTypes and listView.dataTypes[1] then
             local hookedFunctions = listView.dataTypes[1].setupCallback
 
-            listView.dataTypes[1].setupCallback =
-                function(rowControl, slot)
-                    rowControl.isGrid = nil
-                    rowControl:GetNamedChild("Button").customTooltipAnchor = igvTooltipAnchor
-                    hookedFunctions(rowControl, slot)
-                end
+            listView.dataTypes[1].setupCallback = function(rowControl, slot)
+                rowControl.isGrid = nil
+                rowControl:GetNamedChild("Button").customTooltipAnchor = igvTooltipAnchor
+                hookedFunctions(rowControl, slot)
+            end
         end
     end
     --hook function!  to be called before "ZO_ScrollList_UpdateScroll"
