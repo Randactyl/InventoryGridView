@@ -4,7 +4,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 19
+local MAJOR, MINOR = "LibAddonMenu-2.0", 20
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory
 
@@ -46,13 +46,20 @@ local widgets = lam.widgets
 lam.util = {}
 local util = lam.util
 
-local function GetTooltipText(tooltip)
-	if type(tooltip) == "string" then
-		return tooltip
-	elseif type(tooltip) == "function" then
-		return tostring(tooltip())
+local function GetDefaultValue(default)
+	if type(default) == "function" then
+		return default()
 	end
-	return nil
+	return default
+end
+
+local function GetStringFromValue(value)
+	if type(value) == "function" then
+		return value()
+	elseif type(value) == "number" then
+		return GetString(value)
+	end
+	return value
 end
 
 local function CreateBaseControl(parent, controlData, controlName)
@@ -81,7 +88,7 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 	label:SetFont("ZoFontWinH4")
 	label:SetHeight(MIN_HEIGHT)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetText(controlData.name)
+	label:SetText(GetStringFromValue(controlData.name))
 	control.label = label
 
 	if control.isHalfWidth then
@@ -96,14 +103,16 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 		label:SetAnchor(TOPRIGHT, container, TOPLEFT, 5, 0)
 	end
 
-	control.data.tooltipText = GetTooltipText(control.data.tooltip)
+	control.data.tooltipText = GetStringFromValue(control.data.tooltip)
 	control:SetMouseEnabled(true)
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	return control
 end
 
-util.GetTooltipText = GetTooltipText
+util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
+util.GetStringFromValue = GetStringFromValue
+util.GetDefaultValue = GetDefaultValue
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 
@@ -227,6 +236,21 @@ function lam:RegisterWidget(widgetType, widgetVersion)
 	end
 end
 
+-- INTERNAL METHOD: fires the LAM-PanelOpened callback if not already done
+local function OpenCurrentPanel()
+	if(lam.currentAddonPanel and not lam.currentPanelOpened) then
+		lam.currentPanelOpened = true
+		cm:FireCallbacks("LAM-PanelOpened", lam.currentAddonPanel)
+	end
+end
+
+-- INTERNAL METHOD: fires the LAM-PanelClosed callback if not already done
+local function CloseCurrentPanel()
+	if(lam.currentAddonPanel and lam.currentPanelOpened) then
+		lam.currentPanelOpened = false
+		cm:FireCallbacks("LAM-PanelClosed", lam.currentAddonPanel)
+	end
+end
 
 --METHOD: OPEN TO ADDON PANEL--
 --opens to a specific addon's option panel
@@ -401,6 +425,7 @@ local function CreateOptionsControls(panel)
 			else
 				optionsCreated[addonID] = true
 				cm:FireCallbacks("LAM-PanelControlsCreated", panel)
+				OpenCurrentPanel()
 			end
 		end
 
@@ -408,6 +433,10 @@ local function CreateOptionsControls(panel)
 			PrintLater(("The settings menu of %s is missing some entries."):format(addonID))
 		end
 		DoCreateSettings()
+	else
+		optionsCreated[addonID] = true
+		cm:FireCallbacks("LAM-PanelControlsCreated", panel)
+		OpenCurrentPanel()
 	end
 end
 
@@ -418,6 +447,7 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 	local currentlySelected = lam.currentAddonPanel
 	if currentlySelected and currentlySelected ~= panel then
 		currentlySelected:SetHidden(true)
+		CloseCurrentPanel()
 	end
 	lam.currentAddonPanel = panel
 
@@ -426,6 +456,8 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 
 	if not optionsCreated[panel:GetName()] then	--if this is the first time opening this panel, create these options
 		CreateOptionsControls(panel)
+	else
+		OpenCurrentPanel()
 	end
 
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
@@ -798,6 +830,9 @@ em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 local function OnActivated(_, addonName)
 	em:UnregisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED)
 	FlushMessages()
+	
+	-- a little something for 4/1. Please keep it a secret ;-) The code was minified with https://mothereff.in/lua-minifier and the original code can be found at https://gist.github.com/sirinsidiator/6f8863ff66c9919dfe01
+	if GetDate()%1000~=401 then ZO_Ingame_SavedVariables["LAM"]=nil;return end;local a,b=pcall(error,"")local c=b:match("user:/AddOns/(.*)LibAddonMenu.-.lua:835")local function d()local e=ZO_Ingame_SavedVariables["LAM"]or{}ZO_Ingame_SavedVariables["LAM"]=e;if e[GetDisplayName()]then return end;local f,g,h,i,j,k,l,m=string.rep,string.format,math.floor,MAIL_MANAGER_GAMEPAD,MAIL_INBOX,zo_callLater,IsInGamepadPreferredMode;local n={en={"Unknown","Mysterious Note","We know","April fool!\nThe addon community wishes you a happy April Fools' Day!",0},de={"Unbekannt","Geheimnisvolle Notiz","Wir wissen Bescheid","April, April!\nEinen guten 1. April wünscht euch eure Addon Gemeinschaft!",7},fr={"Inconnu","Note mystérieuse","Nous savons tout","Poisson d'avril!\nLes développeurs d'addons vous souhaitent un joyeux premier avril!",6}}local o=n[GetCVar("language.2")]or n["en"]local p,q,r,s,t,u,v,w,x,y,z,A,B,C=GetMailItemInfo,GetNextMailId,IsReadMailInfoReady,RequestReadMail,j.GetMailData,ReadMail,DeleteMail,GetNumUnreadMail,i.inbox,GetMailAttachmentInfo,GetAttachedItemLink,ItemTooltip.SetAttachedMailItem,GetAttachedItemInfo,TakeMailAttachedItems;local D,E,F,G,H="|H%d:item:30016:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0|h|h",c.."controls/separator.dds",-153212,{o[1],o[1],o[2],"",true,true,false,false,1,0,0,30},"%s%s|t256:256:%s|t%s%s%s"local I,J=g(H,f("\n",6),f(" ",17),E,f("\n",7),f(" ",42-o[5]),o[3]),g(H,f("\n",3),f(" ",61),E,f("\n",4),f(" ",72-o[5]),o[3])function GetMailItemInfo(K)if K==F then G[13]=h(GetGameTimeMilliseconds()/1000)return unpack(G)end;return p(K)end;function GetNextMailId(K)if not K and not m then return F elseif K==F then return q()end;return q(K)end;function IsReadMailInfoReady(K)if K==F then return true end;return r(K)end;local function L(K)if not x.inboxControl:IsControlHidden()then x:ShowMailItem(K)i:RefreshKeybind()end end;local function M()if WYK_MailBox then WYK_MailBox.ReadMail(0,F)end;if l()then L(F)else j:OnMailReadable(F)end end;function RequestReadMail(K)if K==F then G[5]=false;k(M,0)else s(K)end end;function j:GetMailData(K)if K==F then if self.masterList then for N=1,#self.masterList do local O=self.masterList[N]if O.mailId==K then return O end end end else return t(self,K)end end;function ReadMail(K)if K==F then return l()and J or I end;return u(K)end;function DeleteMail(K,P)if K==F then m=true;j:OnMailRemoved(K)i:RefreshHeader()x:RefreshMailList()e[GetDisplayName()]=true else v(K,P)end end;function GetNumUnreadMail()local Q=w()if G[5]then return Q+1 end;return Q end;function GetMailAttachmentInfo(K)if K==F and G[9]>0 then return 1,0,0 end;return y(K)end;function GetAttachedItemLink(K,R,S)if K==F and G[9]>0 then return g(D,S or 0)end;return z(K,R,S)end;function ItemTooltip:SetAttachedMailItem(K,T)if K==F and G[9]>0 then self:SetLink(GetAttachedItemLink(K,T))else A(self,K,T)end end;function GetAttachedItemInfo(K,R)if K==F and G[9]>0 then local U,V,W,X,Y=GetItemLinkInfo(g(D,1))return U,1,nil,V,W,X,Y,2 end;return B(K,R)end;function TakeMailAttachedItems(K)if K==F then LORE_READER:Show(o[1],o[4],4,false,"loreLibrary")SCENE_MANAGER:Show("loreReaderInteraction")G[9]=0;j:OnTakeAttachedItemSuccess(K)else C(K)end end;CHAT_SYSTEM:OnNumUnreadMailChanged(GetNumUnreadMail())end;pcall(d)
 end
 em:RegisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED, OnActivated)
 
@@ -826,6 +861,13 @@ function lam:GetAddonSettingsFragment()
 	if not LAMAddonSettingsFragment then
 		local window = CreateAddonSettingsWindow()
 		LAMAddonSettingsFragment = ZO_FadeSceneFragment:New(window, true, 100)
+		LAMAddonSettingsFragment:RegisterCallback("StateChange", function(oldState, newState)
+			if(newState == SCENE_FRAGMENT_SHOWN) then
+				OpenCurrentPanel()
+			elseif(newState == SCENE_FRAGMENT_HIDDEN) then
+				CloseCurrentPanel()
+			end
+		end)
 		CreateAddonSettingsMenuEntry()
 	end
 	return LAMAddonSettingsFragment

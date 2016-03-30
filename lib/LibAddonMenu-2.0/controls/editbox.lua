@@ -1,20 +1,20 @@
 --[[editboxData = {
 	type = "editbox",
-	name = "My Editbox",
-	tooltip = "Editbox's tooltip text.",
+	name = "My Editbox", -- or string id or function returning a string
 	getFunc = function() return db.text end,
 	setFunc = function(text) db.text = text doStuff() end,
+	tooltip = "Editbox's tooltip text.", -- or string id or function returning a string (optional)
 	isMultiline = true,	--boolean (optional)
 	isExtraWide = true,	--boolean (optional)
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
-	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.text,	--(optional)
-	reference = "MyAddonEditbox"	--(optional) unique global reference to control
+	warning = "Will need to reload the UI.",	-- or string id or function returning a string (optional)
+	default = defaults.text,	-- default value or function that returns the default value (optional)
+	reference = "MyAddonEditbox"	-- unique global reference to control (optional)
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -44,7 +44,7 @@ end
 
 local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
-		value = control.data.default
+		value = LAM.util.GetDefaultValue(control.data.default)
 		control.data.setFunc(value)
 		control.editbox:SetText(value)
 	elseif value then
@@ -142,7 +142,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 		else
 			control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
 		end
-		control.warning.data = {tooltipText = editboxData.warning}
+		control.warning.data = {tooltipText = LAM.util.GetStringFromValue(editboxData.warning)}
 	end
 
 	if editboxData.disabled ~= nil then
