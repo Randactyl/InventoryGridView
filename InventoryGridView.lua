@@ -34,7 +34,7 @@ local function AddButton(parentWindow, IGVId)
     button:SetMouseEnabled(true)
 
     --where should the button go?
-    if IGVId == ZO_StoreWindowList.IGVId or IGVId == ZO_BuyBackList.IGVId or IGVId == ZO_QuickSlotList.IGVId then
+    if IGVId == 5 or IGVId == 6 or IGVId == 7 or IGVId == 8 then
         button.itemArea = parentWindow:GetNamedChild("List")
     else
         button.itemArea = parentWindow:GetNamedChild("Backpack")
@@ -65,7 +65,8 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
         [5] = ZO_StoreWindowList,
         [6] = ZO_BuyBackList,
         [7] = ZO_QuickSlotList,
-        --[8] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
+        [8] = ZO_CraftBagList,
+        --[9] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
     }
     for IGVId, bag in ipairs(bags) do
         local controlWidth = bag.controlHeight

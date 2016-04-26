@@ -10,7 +10,8 @@ local GUILD_BANK = ZO_GuildBankBackpack		                         --IGVId = 4
 local STORE = ZO_StoreWindowList			                         --IGVId = 5
 local BUYBACK = ZO_BuyBackList				                         --IGVId = 6
 local QUICKSLOT = ZO_QuickSlotList                                   --IGVId = 7
---local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack   --IGVId = 8
+local CRAFT = ZO_CraftBagList                                        --IGVId = 8
+--local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack   --IGVId = 9
 
 local skinChoices = {}
 local skins = {}
@@ -42,6 +43,7 @@ function InventoryGridViewSettings:Initialize()
 			[5] = true, --STORE
 			[6] = true, --BUYBACK
 			[7] = true, --QUICKSLOT
+			[8] = true, --CRAFT
 		},
         allowRarityColor = true,
         gridSize = 52,
@@ -159,6 +161,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 				STORE.gridSize = value
 				BUYBACK.gridSize = value
 				QUICKSLOT.gridSize = value
+				CRAFT.gridSize = value
 				--REFINE.gridSize = value
 				InventoryGridView_ToggleOutlines(BAGS, settings.allowRarityColor)
 				InventoryGridView_ToggleOutlines(QUEST, settings.allowRarityColor)
@@ -167,6 +170,7 @@ function InventoryGridViewSettings:CreateOptionsMenu()
 				InventoryGridView_ToggleOutlines(STORE, settings.allowRarityColor)
 				InventoryGridView_ToggleOutlines(BUYBACK, settings.allowRarityColor)
 				InventoryGridView_ToggleOutlines(QUICKSLOT, settings.allowRarityColor)
+				InventoryGridView_ToggleOutlines(CRAFT, settings.allowRarityColor)
 				--InventoryGridView_ToggleOutlines(REFINE, settings.allowRarityColor)
 				example:SetDimensions(value, value)
 			end,

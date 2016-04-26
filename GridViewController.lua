@@ -378,30 +378,37 @@ local function ReshapeSlot(control, isGrid, isOutlines, width, height, forceUpda
         local stat = control:GetNamedChild("StatValue")
 
         --make sure sell price label stays shown/hidden
-        if not oldSetHidden then oldSetHidden = sell.SetHidden end
-        sell.SetHidden = function(sell, shouldHide)
-            if isGrid and shouldHide then
-                oldSetHidden(sell, shouldHide)
-            elseif isGrid then
-                return
-            else
-                oldSetHidden(sell, shouldHide)
+        if sell then
+            if not oldSetHidden then oldSetHidden = sell.SetHidden end
+            
+            sell.SetHidden = function(sell, shouldHide)
+                if isGrid and shouldHide then
+                    oldSetHidden(sell, shouldHide)
+                elseif isGrid then
+                    return
+                else
+                    oldSetHidden(sell, shouldHide)
+                end
             end
+            --show/hide sell price label
+            sell:SetHidden(isGrid)
         end
-        --show/hide sell price label
-        sell:SetHidden(isGrid)
 
         --create outline texture for control if missing
         if not outline then
             outline = WINDOW_MANAGER:CreateControl(control:GetName() .. "Outline", control, CT_TEXTURE)
             outline:SetAnchor(CENTER, control, CENTER)
+            outline:SetDimensions(height, height)
         end
 
-        button:ClearAnchors()
+        if button then
+            button:ClearAnchors()
+            button:SetDimensions(height * ICON_MULT, height * ICON_MULT)
+        end
+        
         if new then new:ClearAnchors() end
+            
         control:SetDimensions(width, height)
-        button:SetDimensions(height * ICON_MULT, height * ICON_MULT)
-        outline:SetDimensions(height, height)
 
         if isGrid == true and new ~= nil then
             button:SetAnchor(CENTER, control, CENTER)
@@ -411,6 +418,7 @@ local function ReshapeSlot(control, isGrid, isOutlines, width, height, forceUpda
 
             name:SetHidden(true)
             stat:SetHidden(true)
+            
             highlight:SetTexture(TEXTURE_SET.HOVER)
             highlight:SetTextureCoords(0, 1, 0, 1)
 
@@ -423,26 +431,31 @@ local function ReshapeSlot(control, isGrid, isOutlines, width, height, forceUpda
             else
                 outline:SetHidden(true)
             end
+            
             AddColor(control)
         else
             local LIST_SLOT_BACKGROUND = [[EsoUI/Art/Miscellaneous/listItem_backdrop.dds]]
             local LIST_SLOT_HOVER = [[EsoUI/Art/Miscellaneous/listitem_highlight.dds]]
 
-            button:SetAnchor(CENTER, control, TOPLEFT, 47, 26)
+            if button then button:SetAnchor(CENTER, control, TOPLEFT, 47, 26) end
 
             if new then new:SetAnchor(CENTER, control, TOPLEFT, 20, 27) end
 
-            name:SetHidden(false)
-            stat:SetHidden(false)
+            if name then name:SetHidden(false) end
+            if stat then stat:SetHidden(false) end
             outline:SetHidden(true)
 
-            highlight:SetTexture(LIST_SLOT_HOVER)
-            highlight:SetColor(1, 1, 1, 0)
-            highlight:SetTextureCoords(0, 1, 0, .625)
-
-            bg:SetTexture(LIST_SLOT_BACKGROUND)
-            bg:SetTextureCoords(0, 1, 0, .8125)
-            bg:SetColor(1, 1, 1, 1)
+            if highlight then
+                highlight:SetTexture(LIST_SLOT_HOVER)
+                highlight:SetColor(1, 1, 1, 0)
+                highlight:SetTextureCoords(0, 1, 0, .625)
+            end
+            
+            if bg then
+                bg:SetTexture(LIST_SLOT_BACKGROUND)
+                bg:SetTextureCoords(0, 1, 0, .8125)
+                bg:SetColor(1, 1, 1, 1)
+            end
         end
     end
 end
@@ -460,8 +473,8 @@ local function ReshapeSlots(self)
         height = self.listHeight
     end
 
-    --BUYBACK and QUICKSLOT don't have the same child element pattern, have to start at 1 instead of 2
-    if self.IGVId == INVENTORY_QUEST_ITEM or self.IGVId == 6 or self.IGVId == 7 then
+    --QUEST, BUYBACK, QUICKSLOT, and CRAFT don't have the same child element pattern, have to start at 1 instead of 2
+    if self.IGVId == 2 or self.IGVId == 6 or self.IGVId == 7 or self.IGVId == 8 then
         for i = 1, numControls do
             ReshapeSlot(allControlsParent:GetChild(i), self.isGrid, self.isOutlines, width, height, self.forceUpdate)
         end
@@ -471,7 +484,7 @@ local function ReshapeSlots(self)
                allControlsParent:GetChild(i).isGrid = self.isGrid
             end
 
-            if self.IGVId == INVENTORY_QUEST_ITEM then
+            if self.IGVId == 2 then
                 for _, v in pairs(self.dataTypes[2].pool["m_Free"]) do
                     ReshapeSlot(v, self.isGrid, self.isOutlines, width, height, self.forceUpdate)
                 end
@@ -508,7 +521,8 @@ function InventoryGridView_ToggleOutlines(toggle)
         [5] = ZO_StoreWindowList,
         [6] = ZO_BuyBackList,
         [7] = ZO_QuickSlotList,
-        --[8] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
+        [8] = ZO_CraftBagList,
+        --[9] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
     }
 
     for _, self in ipairs(bags) do
@@ -564,11 +578,13 @@ function InventoryGridView_SetMinimumQuality(quality, forceUpdate)
     ZO_GuildBankBackpack.forceUpdate = forceUpdate or false
     ZO_StoreWindowList.forceUpdate = forceUpdate or false
     --ZO_BuyBackList.forceUpdate = forceUpdate or false
+    ZO_CraftBagList.forceUpdate = forceUpdate or false
     ReshapeSlots(ZO_PlayerInventoryBackpack)
     ReshapeSlots(ZO_PlayerBankBackpack)
     ReshapeSlots(ZO_GuildBankBackpack)
     ReshapeSlots(ZO_StoreWindowList)
     --ReshapeSlots(ZO_BuyBackList)
+    ReshapeSlots(ZO_CraftBagList)
 end
 
 function InventoryGridView_SetTextureSet(textureSet, forceUpdate)
@@ -578,11 +594,13 @@ function InventoryGridView_SetTextureSet(textureSet, forceUpdate)
     ZO_GuildBankBackpack.forceUpdate = forceUpdate or false
     ZO_StoreWindowList.forceUpdate = forceUpdate or false
     --ZO_BuyBackList.forceUpdate = forceUpdate or false
+    ZO_CraftBagList.forceUpdate = forceUpdate or false
     ReshapeSlots(ZO_PlayerInventoryBackpack)
     ReshapeSlots(ZO_PlayerBankBackpack)
     ReshapeSlots(ZO_GuildBankBackpack)
     ReshapeSlots(ZO_StoreWindowList)
     --ReshapeSlots(ZO_BuyBackList)
+    ReshapeSlots(ZO_CraftBagList)
 end
 
 --init the grid view data
@@ -684,8 +702,9 @@ do
     prepListView(ZO_StoreWindowList)
     prepListView(ZO_BuyBackList)
     prepListView(ZO_QuickSlotList)
+    prepListView(ZO_CraftBagList)
 
     ZO_PreHook("ZO_ScrollList_UpdateScroll", ScrollController)
     ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
-    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
+    --ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
 end
