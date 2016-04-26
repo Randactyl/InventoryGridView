@@ -338,8 +338,18 @@ end
 --[[----------------------------------------------------------------------------
     Our own code
 --]]----------------------------------------------------------------------------
-local minimumQuality = ITEM_QUALITY_TRASH
+local MIN_QUALITY = ITEM_QUALITY_TRASH
 local TEXTURE_SET = nil
+
+local BAGS = ZO_PlayerInventoryBackpack		                         --IGVId = 1
+local QUEST = ZO_PlayerInventoryQuest		                         --IGVId = 2
+local BANK = ZO_PlayerBankBackpack			                         --IGVId = 3
+local GUILD_BANK = ZO_GuildBankBackpack		                         --IGVId = 4
+local STORE = ZO_StoreWindowList			                         --IGVId = 5
+local BUYBACK = ZO_BuyBackList				                         --IGVId = 6
+local QUICKSLOT = ZO_QuickSlotList                                   --IGVId = 7
+local CRAFT = ZO_CraftBagList                                        --IGVId = 8
+--local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack   --IGVId = 9
 
 local function AddColor(control)
     if not control.dataEntry then return end
@@ -349,7 +359,7 @@ local function AddColor(control)
     local r, g, b = GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_QUALITY_COLORS, quality)
 
     local alpha = 1
-    if quality < minimumQuality then
+    if quality < MIN_QUALITY then
         alpha = 0
     end
 
@@ -514,18 +524,20 @@ end
 
 function InventoryGridView_ToggleOutlines(toggle)
     local bags = {
-        [1] = ZO_PlayerInventoryBackpack,
-        [2] = ZO_PlayerInventoryQuest,
-        [3] = ZO_PlayerBankBackpack,
-        [4] = ZO_GuildBankBackpack,
-        [5] = ZO_StoreWindowList,
-        [6] = ZO_BuyBackList,
-        [7] = ZO_QuickSlotList,
-        [8] = ZO_CraftBagList,
-        --[9] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
+        [1] = BAGS,
+        [2] = QUEST,
+        [3] = BANK,
+        [4] = GUILD_BANK,
+        [5] = STORE,
+        [6] = BUYBACK,
+        [7] = QUICKSLOT,
+        [8] = CRAFT,
+        --[9] = REFINE,
     }
 
-    for _, self in ipairs(bags) do
+    for _, self in pairs(bags) do
+        if not self then return end
+        
         self.isOutlines = toggle
         self.forceUpdate = self.isGrid
 
@@ -571,36 +583,37 @@ function InventoryGridView_ToggleGrid(self, toggle)
     ReshapeSlots(self)
 end
 
+function InventoryGridView_RefreshAll(forceUpdate)
+    local bags = {
+        [1] = BAGS,
+        [2] = QUEST,
+        [3] = BANK,
+        [4] = GUILD_BANK,
+        [5] = STORE,
+        --[6] = BUYBACK,
+        [7] = QUICKSLOT,
+        [8] = CRAFT,
+        --[9] = REFINE,
+    }
+    
+    for _, bag in pairs(bags) do
+        if bag then
+            bag.forceUpdate = forceUpdate or false
+            ReshapeSlots(bag)
+        end
+    end
+end
+
 function InventoryGridView_SetMinimumQuality(quality, forceUpdate)
-    minimumQuality = quality
-    ZO_PlayerInventoryBackpack.forceUpdate = forceUpdate or false
-    ZO_PlayerBankBackpack.forceUpdate = forceUpdate or false
-    ZO_GuildBankBackpack.forceUpdate = forceUpdate or false
-    ZO_StoreWindowList.forceUpdate = forceUpdate or false
-    --ZO_BuyBackList.forceUpdate = forceUpdate or false
-    ZO_CraftBagList.forceUpdate = forceUpdate or false
-    ReshapeSlots(ZO_PlayerInventoryBackpack)
-    ReshapeSlots(ZO_PlayerBankBackpack)
-    ReshapeSlots(ZO_GuildBankBackpack)
-    ReshapeSlots(ZO_StoreWindowList)
-    --ReshapeSlots(ZO_BuyBackList)
-    ReshapeSlots(ZO_CraftBagList)
+    MIN_QUALITY = quality
+    
+    InventoryGridView_RefreshAll(forceUpdate)
 end
 
 function InventoryGridView_SetTextureSet(textureSet, forceUpdate)
     TEXTURE_SET = textureSet
-    ZO_PlayerInventoryBackpack.forceUpdate = forceUpdate or false
-    ZO_PlayerBankBackpack.forceUpdate = forceUpdate or false
-    ZO_GuildBankBackpack.forceUpdate = forceUpdate or false
-    ZO_StoreWindowList.forceUpdate = forceUpdate or false
-    --ZO_BuyBackList.forceUpdate = forceUpdate or false
-    ZO_CraftBagList.forceUpdate = forceUpdate or false
-    ReshapeSlots(ZO_PlayerInventoryBackpack)
-    ReshapeSlots(ZO_PlayerBankBackpack)
-    ReshapeSlots(ZO_GuildBankBackpack)
-    ReshapeSlots(ZO_StoreWindowList)
-    --ReshapeSlots(ZO_BuyBackList)
-    ReshapeSlots(ZO_CraftBagList)
+    
+    InventoryGridView_RefreshAll(forceUpdate)
 end
 
 --init the grid view data
@@ -706,5 +719,7 @@ do
 
     ZO_PreHook("ZO_ScrollList_UpdateScroll", ScrollController)
     ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
-    --ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
+    if not CRAFT then
+        ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
+    end
 end

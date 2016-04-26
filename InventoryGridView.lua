@@ -69,24 +69,24 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
         --[9] = ZO_SmithingTopLevelRefinementPanelInventoryBackpack,
     }
     for IGVId, bag in ipairs(bags) do
-        local controlWidth = bag.controlHeight
-        local contentsWidth = bag:GetNamedChild("Contents"):GetWidth()
-        local itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-        local gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-        bag.forceUpdate = true
-        bag.listHeight = controlWidth
-        bag.leftPadding = leftPadding
-        bag.contentsWidth = contentsWidth
-        bag.itemsPerRow = itemsPerRow
-        bag.gridSpacing = gridSpacing
-        bag.IGVId = IGVId
-        bag.isGrid = IGVSettings:IsGrid(IGVId)
-        bag.isOutlines = IGVSettings:IsAllowOutline()
-        bag.gridSize = IGVSettings:GetGridSize()
+        if bag ~= nil then
+            local controlWidth = bag.controlHeight
+            local contentsWidth = bag:GetNamedChild("Contents"):GetWidth()
+            local itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
+            local gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
+            bag.forceUpdate = true
+            bag.listHeight = controlWidth
+            bag.leftPadding = leftPadding
+            bag.contentsWidth = contentsWidth
+            bag.itemsPerRow = itemsPerRow
+            bag.gridSpacing = gridSpacing
+            bag.IGVId = IGVId
+            bag.isGrid = IGVSettings:IsGrid(IGVId)
+            bag.isOutlines = IGVSettings:IsAllowOutline()
+            bag.gridSize = IGVSettings:GetGridSize()
 
-        --if not IGVId == INVENTORY_QUEST_ITEM then
             AddButton(bag:GetParent(), IGVId)
-        --end
+        end
     end
 
     SHARED_INVENTORY.IGViconZoomLevel = IGVSettings:GetIconZoomLevel()
