@@ -28,6 +28,8 @@ settings.lua
 adapter.lua
 API.lua
 
+bindings.xml
+
 skins\Rushmik\rushmik.lua
 skins\Classic\classic.lua
 skins\Circles\circles.lua
