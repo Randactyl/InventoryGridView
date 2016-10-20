@@ -83,6 +83,7 @@ function settings.InitializeSettings()
 				setFunc = function(value)
 					vars.isTooltipOffset = value
 				end,
+				default = defaultVars.isTooltipOffset,
 			},
 			[2] = {
 				type = "dropdown",
@@ -99,6 +100,7 @@ function settings.InitializeSettings()
                     exampleOutline:SetTexture(textureSet.OUTLINE)
                     exampleHover:SetTexture(textureSet.HOVER)
 				end,
+				default = defaultVars.skinChoice,
 				reference = "InventoryGridViewSettingsSkinDropdown",
 			},
 			[3] = {
@@ -112,6 +114,7 @@ function settings.InitializeSettings()
 					vars.showQualityOutline = value
 					exampleOutline:SetHidden(not value)
 				end,
+				default = defaultVars.showQualityOutline,
 				reference = "InventoryGridViewSettingsQualityOutlines",
 			},
 			[4] = {
@@ -124,6 +127,7 @@ function settings.InitializeSettings()
 					vars.minOutlineQuality = QUALITY[value]
 				end,
 				disabled = function() return not vars.showQualityOutline end,
+				default = QUALITY_OPTIONS[defaultVars.minOutlineQuality + 1],
 				reference = "InventoryGridViewSettingsMinRarityDropdown",
 			},
 			[5] = {
@@ -139,6 +143,7 @@ function settings.InitializeSettings()
 
 					example:SetDimensions(value, value)
 				end,
+				default = defaultVars.gridIconSize,
 				reference = "InventoryGridViewSettingsGridIconSize",
 			},
 			[6] = {
@@ -152,6 +157,7 @@ function settings.InitializeSettings()
 				setFunc = function(value)
 					vars.gridIconZoomLevel = value / 100
 				end,
+				default = defaultVars.gridIconZoomLevel * 100,
 			},
 			[7] = {
 				type = "custom",
