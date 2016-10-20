@@ -400,10 +400,18 @@ function adapter.AddCurrencySoon(rowControl)
     end
 end
 
+local function freeActiveScrollListControls(scrollList)
+    if not scrollList or not scrollList.activeControls then return end
+
+    while #scrollList.activeControls > 0 do
+        FreeActiveScrollListControl(scrollList, 1)
+    end
+end
+
 function adapter.ScrollController(self)
     if self == IGV.currentScrollList and settings.IsGrid(IGV.currentIGVId) then
+        freeActiveScrollListControls(self)
         IGV_ScrollList_UpdateScroll_Grid(self)
-
         util.ReshapeSlots()
 
         return true
@@ -424,9 +432,7 @@ function adapter.ToggleGrid()
     ZO_ScrollList_ResetToTop(scrollList)
 
     util.ReshapeSlots()
-    while #scrollList.activeControls > 0 do
-        FreeActiveScrollListControl(scrollList, 1)
-    end
+    freeActiveScrollListControls(scrollList)
 
     ZO_ScrollList_UpdateScroll(scrollList)
 
