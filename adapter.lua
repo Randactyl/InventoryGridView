@@ -1,10 +1,3 @@
---[[----------------------------------------------------------------------------
-    GridViewController.lua
-    Author: ingeniousclown, Randactyl
-    This is mostly a re-implementation of ZO_ScrollList_UpdateScroll and copies
-    of the local functions and variables required to make it work. This file
-    also initializes all of the necessary fields to convert a list to grid view.
---]]----------------------------------------------------------------------------
 local IGV = InventoryGridView
 IGV.adapter = {}
 
@@ -163,6 +156,7 @@ local function FindStartPoint(self, topEdge)
         return insertPoint
     end
 end
+
 --[[----------------------------------------------------------------------------
     Modified version of ZO_ScrollList_UpdateScroll(self) from
     esoui\libraries\zo_templates\scrolltemplates.lua
@@ -178,7 +172,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
     local itemsPerRow = zo_floor(contentsWidthMinusPadding / gridIconSize)
     local numControls = #self.data or 0
     local numRows = zo_ceil(numControls / itemsPerRow)
-    local gridSpacing = .5 --(contentsWidthMinusPadding - (itemsPerRow * gridIconSize)) / (itemsPerRow - 1)
+    local gridSpacing = .5
     local totalControlHeight = gridIconSize * numRows
     local totalSpacingHeight = gridSpacing * (numRows - 1)
     local scrollableDistance = (totalControlHeight + totalSpacingHeight) - windowHeight
@@ -187,8 +181,6 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
         local totalControlWidth = gridIconSize + gridSpacing
         local controlTop = zo_floor((viewIndex - 1) / itemsPerRow) * totalControlWidth
         local controlLeft = ((viewIndex - 1) % itemsPerRow) * totalControlWidth + LEFT_PADDING
-
-        --d(viewIndex..": "..controlLeft..", "..controlTop)
 
         return controlTop, controlLeft
     end
@@ -205,7 +197,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
     UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
 
     --remove active controls that are now hidden
-    --[[local i = 1
+    local i = 1
     local numActive = #activeControls
     while(i <= numActive) do
         local currentDataEntry = activeControls[i].dataEntry
@@ -218,7 +210,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
         end
         
         consideredMap[currentDataEntry] = true
-    end]]
+    end
 
     --add revealed controls
     local firstInViewIndex = FindStartPoint(self, offset)
@@ -278,7 +270,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
         i = i + 1
         visibleDataIndex = visibleData[i]
         dataEntry = data[visibleDataIndex]
-        --modified--------------------------------------------------------------
+        --Modified--------------------------------------------------------------
         if(dataEntry) then
             --removed isUniform check because we're assuming always uniform
             controlTop, controlLeft = GetTargetTopAndLeftPositions(i)
@@ -297,7 +289,6 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
         --Added-----------------------------------------------------------------
         local controlOffsetX = currentData.left
         ------------------------------------------------------------------------
-        --d(i..": "..controlOffsetX..", "..controlOffset)
         currentControl:ClearAnchors()
         --Modified--------------------------------------------------------------
         currentControl:SetAnchor(TOPLEFT, contents, TOPLEFT, controlOffsetX, controlOffset)
@@ -310,6 +301,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
         consideredMap[k] = nil
     end
 end
+
 --[[----------------------------------------------------------------------------
     Modified version of ZO_ItemTooltip_AddMoney(...) from
     esoui\ingame\tooltip\tooltip.lua
@@ -366,6 +358,7 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
     moneyLine:SetAnchor(CENTER)
     moneyLine:SetDimensions(width, MONEY_LINE_HEIGHT)
 end
+
 --[[----------------------------------------------------------------------------
     Our own code
 --]]----------------------------------------------------------------------------

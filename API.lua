@@ -1,5 +1,4 @@
 local IGV = InventoryGridView
-local util = IGV.util
 local settings = IGV.settings
 
 --returns true if the skin was successfully registered, false if it was not.

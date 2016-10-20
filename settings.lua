@@ -9,29 +9,6 @@ settings.varsVersion = 4
 settings.skinChoices = {}
 settings.skins = {}
 
---remove
-local BAGS = ZO_PlayerInventoryBackpack		                         --IGVId = 1
-local QUEST = ZO_PlayerInventoryQuest		                         --IGVId = 2
-local BANK = ZO_PlayerBankBackpack			                         --IGVId = 3
-local GUILD_BANK = ZO_GuildBankBackpack		                         --IGVId = 4
-local STORE = ZO_StoreWindowList			                         --IGVId = 5
-local BUYBACK = ZO_BuyBackList				                         --IGVId = 6
-local QUICKSLOT = ZO_QuickSlotList                                   --IGVId = 7
-local CRAFT = ZO_CraftBagList                                        --IGVId = 8
---local REFINE = ZO_SmithingTopLevelRefinementPanelInventoryBackpack   --IGVId = 9
-
-local QUALITY_OPTIONS = {
-	"Trash", "Normal", "Magic", "Arcane", "Artifact", "Legendary",
-}
-local QUALITY = {
-	["Trash"] = ITEM_QUALITY_TRASH,
-	["Normal"] = ITEM_QUALITY_NORMAL,
-	["Magic"] = ITEM_QUALITY_MAGIC,
-	["Arcane"] = ITEM_QUALITY_ARCANE,
-	["Artifact"] = ITEM_QUALITY_ARTIFACT,
-	["Legendary"] = ITEM_QUALITY_LEGENDARY,
-}
-
 function settings.InitializeSettings()
 	local defaultVars = {
 		isGrid = {
@@ -56,6 +33,17 @@ function settings.InitializeSettings()
 
 	local function createOptionsMenu()
 		local textureSet = settings.GetTextureSet()
+		local QUALITY_OPTIONS = {
+			"Trash", "Normal", "Magic", "Arcane", "Artifact", "Legendary",
+		}
+		local QUALITY = {
+			["Trash"] = ITEM_QUALITY_TRASH,
+			["Normal"] = ITEM_QUALITY_NORMAL,
+			["Magic"] = ITEM_QUALITY_MAGIC,
+			["Arcane"] = ITEM_QUALITY_ARCANE,
+			["Artifact"] = ITEM_QUALITY_ARTIFACT,
+			["Legendary"] = ITEM_QUALITY_LEGENDARY,
+		}
 
 		--example texture for skin and slider
 		local example = WINDOW_MANAGER:CreateControl("InventoryGridViewSettingsExampleTextureControl", GuiRoot, CT_CONTROL)
@@ -105,10 +93,7 @@ function settings.InitializeSettings()
                 setFunc = function(value)
 					vars.skinChoice = value
 
-					local textureSet = self.GetTextureSet()
-
-					InventoryGridView_SetTextureSet(settings.skins[value], true)
-					InventoryGridView_SetToggleButtonTexture()
+					local textureSet = settings.GetTextureSet()
 
 					exampleBackground:SetTexture(textureSet.BACKGROUND)
                     exampleOutline:SetTexture(textureSet.OUTLINE)
@@ -126,12 +111,6 @@ function settings.InitializeSettings()
 				setFunc = function(value)
 					vars.showQualityOutline = value
 					exampleOutline:SetHidden(not value)
-
-					if value then
-						--InventoryGridView_SetMinimumQuality(QUALITY[vars.minOutlineQuality], true)
-					else
-						--InventoryGridView_SetMinimumQuality(99, true)
-					end
 				end,
 				reference = "InventoryGridViewSettingsQualityOutlines",
 			},
@@ -143,8 +122,6 @@ function settings.InitializeSettings()
 				getFunc = function() return QUALITY_OPTIONS[vars.minOutlineQuality + 1] end,
 				setFunc = function(value)
 					vars.minOutlineQuality = QUALITY[value]
-
-					--InventoryGridView_SetMinimumQuality(QUALITY[value], true)
 				end,
 				disabled = function() return not vars.showQualityOutline end,
 				reference = "InventoryGridViewSettingsMinRarityDropdown",
@@ -159,26 +136,6 @@ function settings.InitializeSettings()
 				getFunc = function() return vars.gridIconSize end,
 				setFunc = function(value)
 					vars.gridIconSize = value
-
-					BAGS.gridIconSize = value
-					QUEST.gridIconSize = value
-					BANK.gridIconSize = value
-					GUILD_BANK.gridIconSize = value
-					STORE.gridIconSize = value
-					BUYBACK.gridIconSize = value
-					QUICKSLOT.gridIconSize = value
-					CRAFT.gridIconSize = value
-					--REFINE.gridIconSize = value
-
-					InventoryGridView_ToggleOutlines(BAGS, vars.showQualityOutline)
-					InventoryGridView_ToggleOutlines(QUEST, vars.showQualityOutline)
-					InventoryGridView_ToggleOutlines(BANK, vars.showQualityOutline)
-					InventoryGridView_ToggleOutlines(GUILD_BANK, vars.showQualityOutline)
-					InventoryGridView_ToggleOutlines(STORE, vars.showQualityOutline)
-					InventoryGridView_ToggleOutlines(BUYBACK, vars.showQualityOutline)
-					InventoryGridView_ToggleOutlines(QUICKSLOT, vars.showQualityOutline)
-					InventoryGridView_ToggleOutlines(CRAFT, vars.showQualityOutline)
-					--InventoryGridView_ToggleOutlines(REFINE, vars.showQualityOutline)
 
 					example:SetDimensions(value, value)
 				end,
@@ -222,13 +179,9 @@ function settings.InitializeSettings()
 			example:SetHandler("OnMouseExit", onMouseExit)
 		end
 		CALLBACK_MANAGER:RegisterCallback("LAM-PanelControlsCreated", onLAMPanelCreated)
-
 	end
 
     createOptionsMenu()
-
-	--InventoryGridView_SetMinimumQuality(QUALITY[vars.minOutlineQuality])
-	--InventoryGridView_SetTextureSet(settings.skins[vars.skinChoice])
 end
 
 function settings.IsGrid(IGVId)

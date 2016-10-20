@@ -30,23 +30,6 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
 
             if not scrollList then return end
 
-            --remove dependency on these
-            --local controlWidth = scrollList.controlHeight
-            --local contentsWidth = scrollList:GetWidth()
-            --local leftPadding = 25
-            --local itemsPerRow = zo_floor((contentsWidth - leftPadding) / (controlWidth))
-            --local gridSpacing = ((contentsWidth - leftPadding) % itemsPerRow) / itemsPerRow
-            --scrollList.forceUpdate = true
-            --scrollList.listHeight = controlWidth
-            --scrollList.leftPadding = leftPadding
-            --scrollList.contentsWidth = contentsWidth
-            --scrollList.itemsPerRow = itemsPerRow
-            --scrollList.gridSpacing = gridSpacing
-            --scrollList.IGVId = IGVId
-            --scrollList.isGrid = settings.IsGrid(IGVId)
-            --scrollList.isOutlines = settings.ShowQualityOutline()
-            --scrollList.gridIconSize = settings.GetGridIconSize()
-
             local function onFragmentStateChange(oldState, newState)
                 local function onFragmentShowing()
                     IGV.currentIGVId = IGVId
