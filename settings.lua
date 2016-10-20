@@ -78,18 +78,28 @@ function settings.InitializeSettings()
 		--now actually set up the panel
 		local panel = {
 			type = "panel",
-			name = "Inventory Grid View",
+			name = GetString(SI_INVENTORYGRIDVIEW_ADDON_NAME),
 			author = "Randactyl",
 			version = IGV.addonVersion,
+			website = "http://www.esoui.com/downloads/info65-InventoryGridView.html",
 			slashCommand = "/inventorygridview",
 			registerForRefresh = true,
 			registerForDefaults = true,
 		}
 		local optionsData = {
 			[1] = {
+				type = "checkbox",
+				name = SI_INVENTORYGRIDVIEW_OFFSETITEMTOOLTIPS_CHECKBOX_LABEL,
+				tooltip = SI_INVENTORYGRIDVIEW_OFFSETITEMTOOLTIPS_CHECKBOX_TOOLTIP,
+				getFunc = function() return vars.isTooltipOffset end,
+				setFunc = function(value)
+					vars.isTooltipOffset = value
+				end,
+			},
+			[2] = {
 				type = "dropdown",
-                name = "Skin",
-                tooltip = "The set of textures that will be used in the grid view.",
+                name = SI_INVENTORYGRIDVIEW_SKIN_DROPDOWN_LABEL,
+                tooltip = SI_INVENTORYGRIDVIEW_SKIN_DROPDOWN_TOOLTIP,
                 choices = settings.skinChoices,
                 getFunc = function() return vars.skinChoice end,
                 setFunc = function(value)
@@ -106,10 +116,10 @@ function settings.InitializeSettings()
 				end,
 				reference = "InventoryGridViewSettingsSkinDropdown",
 			},
-			[2] = {
+			[3] = {
 				type = "checkbox",
-				name = "Quality Outlines",
-				tooltip = "Toggle the outlines on or off.",
+				name = SI_INVENTORYGRIDVIEW_QUALITYOUTLINES_CHECKBOX_LABEL,
+				tooltip = SI_INVENTORYGRIDVIEW_QUALITYOUTLINES_CHECKBOX_TOOLTIP,
 				getFunc = function()
 					return vars.showQualityOutline
 				end,
@@ -125,10 +135,10 @@ function settings.InitializeSettings()
 				end,
 				reference = "InventoryGridViewSettingsQualityOutlines",
 			},
-			[3] = {
+			[4] = {
 				type = "dropdown",
-				name = "Minimum Outline Quality",
-				tooltip = "Don't show outlines under this quality",
+				name = SI_INVENTORYGRIDVIEW_MINOUTLINEQUALITY_DROPDOWN_LABEL,
+				tooltip = SI_INVENTORYGRIDVIEW_MINOUTLINEQUALITY_DROPDOWN_TOOLTIP,
 				choices = QUALITY_OPTIONS,
 				getFunc = function() return QUALITY_OPTIONS[vars.minOutlineQuality + 1] end,
 				setFunc = function(value)
@@ -139,10 +149,10 @@ function settings.InitializeSettings()
 				disabled = function() return not vars.showQualityOutline end,
 				reference = "InventoryGridViewSettingsMinRarityDropdown",
 			},
-			[4] = {
+			[5] = {
 				type = "slider",
-				name = "Grid Size",
-				tooltip = "Set how big or small the grid icons are. Icon area is the square of this number.",
+				name = SI_INVENTORYGRIDVIEW_GRIDICONSIZE_SLIDER_LABEL,
+				tooltip = SI_INVENTORYGRIDVIEW_GRIDICONSIZE_SLIDER_TOOLTIP,
 				min = 24,
 				max = 96,
 				step = 4,
@@ -174,10 +184,10 @@ function settings.InitializeSettings()
 				end,
 				reference = "InventoryGridViewSettingsGridIconSize",
 			},
-			[5] = {
+			[6] = {
 				type = "slider",
-				name = "Icon Zoom Level",
-				tooltip = "Set icon zoom level (on mouse over) from none to default",
+				name = SI_INVENTORYGRIDVIEW_ICONZOOMLEVEL_SLIDER_LABEL,
+				tooltip = SI_INVENTORYGRIDVIEW_ICONZOOMLEVEL_SLIDER_TOOLTIP,
 				min = 100,
 				max = 150,
 				step = 10,
@@ -186,18 +196,9 @@ function settings.InitializeSettings()
 					vars.gridIconZoomLevel = value / 100
 				end,
 			},
-			[6] = {
+			[7] = {
 				type = "custom",
 				reference = "InventoryGridViewSettingsExampleTextureLAMControl",
-			},
-			[7] = {
-				type = "checkbox",
-				name = "Offset Item Tooltips",
-				tooltip = "Should we move item tooltips so they do not cover the item grid?",
-				getFunc = function() return vars.isTooltipOffset end,
-				setFunc = function(value)
-					vars.isTooltipOffset = value
-				end,
 			},
 		}
 

@@ -98,8 +98,8 @@ local function ReshapeSlot(control, isGrid, width, height)
             
             AddColor(control)
         else
-            local LIST_SLOT_BACKGROUND = [[EsoUI/Art/Miscellaneous/listItem_backdrop.dds]]
-            local LIST_SLOT_HOVER = [[EsoUI/Art/Miscellaneous/listitem_highlight.dds]]
+            local LIST_SLOT_BACKGROUND = "EsoUI/Art/Miscellaneous/listItem_backdrop.dds"
+            local LIST_SLOT_HOVER = "EsoUI/Art/Miscellaneous/listitem_highlight.dds"
 
             if button then button:SetAnchor(CENTER, control, TOPLEFT, 47, 26) end
 
@@ -178,6 +178,3 @@ function util.ReshapeSlots()
         end
     end
 end
-
---outlines!
-

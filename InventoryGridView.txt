@@ -20,6 +20,8 @@ lib\LibAddonMenu-2.0\controls\iconpicker.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 
+strings\en.lua
+
 main.lua
 util.lua
 settings.lua
