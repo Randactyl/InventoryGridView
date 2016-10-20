@@ -21,6 +21,7 @@ lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
 
 strings\en.lua
+strings\$(language).lua
 
 main.lua
 util.lua
