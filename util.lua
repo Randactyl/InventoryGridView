@@ -62,8 +62,8 @@ local function ReshapeSlot(control, isGrid, width, height)
         if not outline then
             outline = WINDOW_MANAGER:CreateControl(control:GetName() .. "Outline", control, CT_TEXTURE)
             outline:SetAnchor(CENTER, control, CENTER)
-            outline:SetDimensions(height, height)
         end
+        outline:SetDimensions(height, height)
 
         if button then
             button:ClearAnchors()
