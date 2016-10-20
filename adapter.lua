@@ -418,6 +418,35 @@ function adapter.ScrollController(self)
         return false
     end
 end
+
+function adapter.ToggleGrid()
+    local IGVId = IGV.currentIGVId
+    local scrollList = IGV.currentScrollList
+
+    if not scrollList then return end
+
+    settings.ToggleGrid(IGVId)
+    local isGrid = settings.IsGrid(IGVId)
+
+    ZO_ScrollList_ResetToTop(scrollList)
+
+    util.ReshapeSlots()
+    while #scrollList.activeControls > 0 do
+        FreeActiveScrollListControl(scrollList, 1)
+    end
+
+    ZO_ScrollList_UpdateScroll(scrollList)
+
+    if isGrid then
+        util.ReshapeSlots()
+    else
+        ResizeScrollBar(scrollList, (#scrollList.data * scrollList.controlHeight) - ZO_ScrollList_GetHeight(scrollList))
+    end
+
+    ZO_ScrollList_RefreshVisible(scrollList)
+    util.ReshapeSlots()
+end
+
 --[[
 if not CRAFT then
     ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
