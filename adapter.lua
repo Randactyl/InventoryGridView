@@ -306,19 +306,20 @@ end
     Modified version of ZO_ItemTooltip_AddMoney(...) from
     esoui\ingame\tooltip\tooltip.lua
 --]]----------------------------------------------------------------------------
---added currencyType parameter
+--Added currencyType parameter
+local privateKey = {}
 function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, currencyType)
     local moneyLine = GetControl(tooltipControl, "SellPrice")
     local reasonLabel = GetControl(moneyLine, "Reason")
     local currencyControl = GetControl(moneyLine, "Currency")
 
-    --added---------------------------------------------------------------------
+    --Added---------------------------------------------------------------------
     local currencyType = currencyType or CURT_MONEY
     --these is also from tooltip.lua, outside the function
     local SELL_REASON_COLOR = ZO_ColorDef:New(GetInterfaceColor(INTERFACE_COLOR_TYPE_ITEM_TOOLTIP, ITEM_TOOLTIP_COLOR_SELLS_FOR))
     local REASON_CURRENCY_SPACING = 3
     local MONEY_LINE_HEIGHT = 18
-    local ITEM_TOOLTIP_CURRENCY_OPTIONS = { showTooltips = false, }
+    local ITEM_TOOLTIP_CURRENCY_OPTIONS = {showTooltips = false,}
     ----------------------------------------------------------------------------
 
     moneyLine:SetHidden(false)
@@ -327,10 +328,22 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
     reasonLabel:ClearAnchors()
     currencyControl:ClearAnchors()
 
-     -- right now reason is always a string index
-    if reason and reason ~= 0 then
+    -- right now reason is always a string index
+    --Modified------------------------------------------------------------------
+    if reason == privateKey and amount > 0 then
         reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
-        currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING, -2)
+        currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING)
+
+        reasonLabel:SetHidden(false)
+        reasonLabel:SetColor(SELL_REASON_COLOR:UnpackRGBA())
+        reasonLabel:SetText(GetString(SI_STORE_SORT_TYPE_PRICE)..":")
+
+        local reasonTextWidth, reasonTextHeight = reasonLabel:GetTextDimensions()
+        width = width + reasonTextWidth + REASON_CURRENCY_SPACING
+    elseif reason and reason ~= 0 and reason ~= privateKey then
+    ----------------------------------------------------------------------------
+        reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
+        currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING, -5)
 
         reasonLabel:SetHidden(false)
         reasonLabel:SetColor(SELL_REASON_COLOR:UnpackRGBA())
@@ -345,7 +358,7 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
 
     if amount > 0 then
         currencyControl:SetHidden(false)
-        --modified--------------------------------------------------------------
+        --Modified--------------------------------------------------------------
         ZO_CurrencyControl_SetSimpleCurrency(currencyControl, currencyType,
             amount, ITEM_TOOLTIP_CURRENCY_OPTIONS, CURRENCY_DONT_SHOW_ALL, notEnough)
         ------------------------------------------------------------------------
@@ -365,11 +378,11 @@ end
 local function AddCurrency(rowControl)
     if not rowControl.dataEntry then return end
 
-    local IGVId = rowControl.dataEntry.data.bagId or rowControl:GetParent():GetParent().IGVId
+    local IGVId = IGV.currentIGVId
     local slotIndex = rowControl.dataEntry.data.slotIndex
     local _, stack, sellPrice, currencyType, notEnough
 
-    if IGVId == ZO_StoreWindowList.IGVId or IGVId == ZO_BuyBackList.IGVId then
+    if IGVId == IGVID_STORE then
         for _, v in pairs(rowControl:GetNamedChild("SellPrice").currencyArgs) do
             if v.isUsed == true then
                 currencyType = v.type
@@ -382,21 +395,32 @@ local function AddCurrency(rowControl)
         else
             sellPrice = rowControl.dataEntry.data.currencyQuantity1
         end
+        
         --bandaid catch all for sellPrice == nil
         sellPrice = sellPrice or 0
 
         stack = rowControl.dataEntry.data.stack
-        ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack, 0, notEnough, currencyType)
+
+        ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack, privateKey, notEnough, currencyType)
     else
-        _, stack, sellPrice = GetItemInfo(IGVId, slotIndex)
-        ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack)
+        local bagId = rowControl.dataEntry.data.bagId
+        if not bagId then return end
+
+        _, stack, sellPrice = GetItemInfo(bagId, slotIndex)
+
+        ZO_ItemTooltip_AddMoney(ItemTooltip, sellPrice * stack, privateKey)
     end
 end
 
 function adapter.AddCurrencySoon(rowControl)
-    if rowControl:GetParent():GetParent().IGVId == INVENTORY_QUEST_ITEM then return end
-    if rowControl and rowControl.isGrid then
-        zo_callLater(function() AddCurrency(rowControl) end, 50)
+    if not rowControl and not rowControl.isGrid then return end
+
+    if IGV.currentIGVId == IGVID_CRAFT_BAG or IGV.currentIGVId == IGVID_STORE then
+        local function wrapper()
+            AddCurrency(rowControl)
+        end
+
+        zo_callLater(wrapper, 50)
     end
 end
 
@@ -445,8 +469,3 @@ function adapter.ToggleGrid()
     ZO_ScrollList_RefreshVisible(scrollList)
     util.ReshapeSlots()
 end
-
---[[
-if not CRAFT then
-    ZO_PreHook("ZO_InventorySlot_OnMouseEnter", AddCurrencySoon)
-end]]

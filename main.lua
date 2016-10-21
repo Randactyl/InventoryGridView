@@ -108,6 +108,8 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
         end
         ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
 
+        ZO_PreHook("ZO_InventorySlot_OnMouseEnter", adapter.AddCurrencySoon)
+
         ZO_PreHook("ZO_ScrollList_UpdateScroll", adapter.ScrollController)
     end
     initializeHooks()
