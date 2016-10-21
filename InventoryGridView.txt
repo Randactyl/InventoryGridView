@@ -1,7 +1,7 @@
 ## Title: Inventory Grid View
 ## Author: Randactyl, ingeniousclown
-## Version: 1.6.0.0
-## APIVersion: 100014 100015
+## Version: 2.0.0.0
+## APIVersion: 100017
 ## SavedVariables: InventoryGridView_Settings
 
 lib\LibStub\LibStub.lua
@@ -19,12 +19,21 @@ lib\LibAddonMenu-2.0\controls\header.lua
 lib\LibAddonMenu-2.0\controls\iconpicker.lua
 lib\LibAddonMenu-2.0\controls\slider.lua
 lib\LibAddonMenu-2.0\controls\texture.lua
+lib\libAddonKeybinds\libAddonKeybinds.lua
+lib\LibCustomTitles\LibCustomTitles.lua
 
-InventoryGridViewSettings.lua
+strings\en.lua
+strings\$(language).lua
+
+main.lua
+util.lua
+settings.lua
+adapter.lua
+API.lua
+
+bindings.xml
+
 skins\Rushmik\rushmik.lua
 skins\Classic\classic.lua
 skins\Circles\circles.lua
 skins\Clean\clean.lua
-
-InventoryGridView.lua
-GridViewController.lua
