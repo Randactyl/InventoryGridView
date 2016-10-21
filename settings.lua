@@ -20,12 +20,12 @@ function settings.InitializeSettings()
             [IGVID_STORE]      = true,
             [IGVID_BUY_BACK]   = true,
 		},
-		gridIconSize = 52,
-		gridIconZoomLevel = 1.5,
+		gridIconSize = 64,
+		gridIconZoomLevel = 1.2,
 		isTooltipOffset = true,
 		minOutlineQuality = ITEM_QUALITY_MAGIC,
         showQualityOutline = true,
-        skinChoice = "Rushmik",
+        skinChoice = "Clean by Tonyleila",
     }
 
     settings.vars = ZO_SavedVars:NewAccountWide("InventoryGridView_Settings", settings.varsVersion, nil, defaultVars)
