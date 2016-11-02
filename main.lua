@@ -108,10 +108,43 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
         end
         ZO_PreHook("ZO_InventorySlot_OnMouseEnter", CreateSlotAnimation)
 
+        --append item cost to tooltip
         ZO_PreHook("ZO_InventorySlot_OnMouseEnter", adapter.AddCurrencySoon)
 
+        --hook into scroll list updates
         ZO_PreHook("ZO_ScrollList_UpdateScroll", adapter.ScrollController)
     end
     initializeHooks()
+
+    local function initalizeKeybindStrip()
+        local function shouldShowKeybind()
+            return IGV.currentIGVId ~= nil
+        end
+        local keybindButtonDescriptor = {
+            alignment = KEYBIND_STRIP_ALIGN_LEFT,
+            order = 100,
+            name = GetString(SI_BINDING_NAME_INVENTORYGRIDVIEW_TOGGLE),
+            keybind = "INVENTORYGRIDVIEW_TOGGLE",
+            callback = adapter.ToggleGrid,
+            visible = shouldShowKeybind,
+        }
+        local function onFragmentStateChange(oldState, newState)
+            local function onFragmentShown()
+                KEYBIND_STRIP:AddKeybindButton(keybindButtonDescriptor)
+            end
+
+            local function onFragmentHiding()
+                KEYBIND_STRIP:RemoveKeybindButton(keybindButtonDescriptor)
+            end
+            
+            if newState == SCENE_FRAGMENT_SHOWN then
+                onFragmentShown()
+            elseif newState == SCENE_FRAGMENT_HIDING then
+                onFragmentHiding()
+            end
+        end
+        KEYBIND_STRIP_FADE_FRAGMENT:RegisterCallback("StateChange", onFragmentStateChange)
+    end
+    initalizeKeybindStrip()
 end
 EVENT_MANAGER:RegisterForEvent("InventoryGridViewLoaded", EVENT_ADD_ON_LOADED, InventoryGridViewLoaded)
