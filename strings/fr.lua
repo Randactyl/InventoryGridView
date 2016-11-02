@@ -16,4 +16,4 @@ SafeAddString(SI_INVENTORYGRIDVIEW_GRIDICONSIZE_SLIDER_TOOLTIP, "Définissez la 
 SafeAddString(SI_INVENTORYGRIDVIEW_ICONZOOMLEVEL_SLIDER_LABEL, "Niveau de zoom sur les icônes", 1)
 SafeAddString(SI_INVENTORYGRIDVIEW_ICONZOOMLEVEL_SLIDER_TOOLTIP, "Définissez le niveau de zoom appliqué lorsque la souris passe au-dessus de l'icône.", 1)
 
-SafeAddString(SI_BINDING_NAME_INVENTORYGRIDVIEW_TOGGLE, "Alterner entre la vue grille et la vue liste", 1)
+SafeAddString(SI_BINDING_NAME_INVENTORYGRIDVIEW_TOGGLE, "Alterner vue grille / vue liste", 1)
