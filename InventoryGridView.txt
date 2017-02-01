@@ -1,7 +1,7 @@
 ## Title: Inventory Grid View
 ## Author: Randactyl, ingeniousclown
-## Version: 2.0.1.0
-## APIVersion: 100017
+## Version: 2.0.2.0
+## APIVersion: 100017 100018
 ## SavedVariables: InventoryGridView_Settings
 
 lib\LibStub\LibStub.lua
