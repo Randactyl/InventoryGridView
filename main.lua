@@ -31,18 +31,30 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
             if not scrollList then return end
 
             local function onFragmentStateChange(oldState, newState)
+                local keybindButtonDescriptor = {
+                    alignment = KEYBIND_STRIP_ALIGN_LEFT,
+                    order = 100,
+                    name = GetString(SI_BINDING_NAME_INVENTORYGRIDVIEW_TOGGLE),
+                    keybind = "INVENTORYGRIDVIEW_TOGGLE",
+                    callback = adapter.ToggleGrid,
+                }
+
                 local function onFragmentShowing()
                     IGV.currentIGVId = IGVId
                     IGV.currentScrollList = scrollList
 
                     ZO_ScrollList_UpdateScroll(scrollList)
+
+                    KEYBIND_STRIP:AddKeybindButton(keybindButtonDescriptor)
                 end
 
                 local function onFragmentHiding()
                     IGV.currentIGVId = nil
                     IGV.currentScrollList = nil
+
+                    KEYBIND_STRIP:RemoveKeybindButton(keybindButtonDescriptor)
                 end
-                
+
                 if newState == SCENE_FRAGMENT_SHOWING then
                     onFragmentShowing()
                 elseif newState == SCENE_FRAGMENT_HIDING then
@@ -55,7 +67,7 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
             local function igvTooltipAnchor(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
                 -- call the regular one, not ideal but probably better than copying most of the code here :)
                 ZO_Tooltips_SetupDynamicTooltipAnchors(tooltip, buttonPart, comparativeTooltip1, comparativeTooltip2)
-                
+
                 -- custom setup
                 local rowControl = buttonPart:GetParent()
 
@@ -115,36 +127,5 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
         ZO_PreHook("ZO_ScrollList_UpdateScroll", adapter.ScrollController)
     end
     initializeHooks()
-
-    local function initalizeKeybindStrip()
-        local function shouldShowKeybind()
-            return IGV.currentIGVId ~= nil
-        end
-        local keybindButtonDescriptor = {
-            alignment = KEYBIND_STRIP_ALIGN_LEFT,
-            order = 100,
-            name = GetString(SI_BINDING_NAME_INVENTORYGRIDVIEW_TOGGLE),
-            keybind = "INVENTORYGRIDVIEW_TOGGLE",
-            callback = adapter.ToggleGrid,
-            visible = shouldShowKeybind,
-        }
-        local function onFragmentStateChange(oldState, newState)
-            local function onFragmentShown()
-                KEYBIND_STRIP:AddKeybindButton(keybindButtonDescriptor)
-            end
-
-            local function onFragmentHiding()
-                KEYBIND_STRIP:RemoveKeybindButton(keybindButtonDescriptor)
-            end
-            
-            if newState == SCENE_FRAGMENT_SHOWN then
-                onFragmentShown()
-            elseif newState == SCENE_FRAGMENT_HIDING then
-                onFragmentHiding()
-            end
-        end
-        KEYBIND_STRIP_FADE_FRAGMENT:RegisterCallback("StateChange", onFragmentStateChange)
-    end
-    initalizeKeybindStrip()
 end
 EVENT_MANAGER:RegisterForEvent("InventoryGridViewLoaded", EVENT_ADD_ON_LOADED, InventoryGridViewLoaded)
