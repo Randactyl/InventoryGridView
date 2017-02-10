@@ -9,6 +9,8 @@ local LEFT_PADDING = 25
 --[[----------------------------------------------------------------------------
     Ported ZOS code from esoui\libraries\zo_templates\scrolltemplates.lua
 --]]----------------------------------------------------------------------------
+local ANIMATE_INSTANTLY = true
+
 local function UpdateScrollFade(useFadeGradient, scroll, slider, sliderValue)
     if(useFadeGradient) then
         local sliderMin, sliderMax = slider:GetMinMax()
@@ -19,7 +21,7 @@ local function UpdateScrollFade(useFadeGradient, scroll, slider, sliderValue)
         else
             scroll:SetFadeGradient(1, 0, 0, 0)
         end
-        
+
         if(sliderValue < sliderMax) then
             scroll:SetFadeGradient(2, 0, -1, zo_min(sliderMax - sliderValue, 64))
         else
@@ -35,13 +37,17 @@ local function AreSelectionsEnabled(self)
     return self.selectionTemplate or self.selectionCallback
 end
 
-local function RemoveAnimationOnControl(control, animationFieldName)
+local function RemoveAnimationOnControl(control, animationFieldName, animateInstantly)
     if control[animationFieldName] then
-        control[animationFieldName]:PlayBackward()
+        if animateInstantly then
+            control[animationFieldName]:PlayInstantlyToStart()
+        else
+            control[animationFieldName]:PlayBackward()
+        end
     end
 end
 
-local function UnhighlightControl(self, control) 
+local function UnhighlightControl(self, control)
     RemoveAnimationOnControl(control, "HighlightAnimation")
 
     self.highlightedControl = nil
@@ -51,8 +57,8 @@ local function UnhighlightControl(self, control)
     end
 end
 
-local function UnselectControl(self, control)
-    RemoveAnimationOnControl(control, "SelectionAnimation")
+local function UnselectControl(self, control, animateInstantly)
+    RemoveAnimationOnControl(control, "SelectionAnimation", animateInstantly)
 
     self.selectedControl = nil
 end
@@ -64,7 +70,7 @@ local function AreDataEqualSelections(self, data1, data2)
 
     if(data1 == nil or data2 == nil) then
         return false
-    end        
+    end
 
     local dataEntry1 = data1.dataEntry
     local dataEntry2 = data2.dataEntry
@@ -82,7 +88,7 @@ local function FreeActiveScrollListControl(self, i)
     local currentControl = self.activeControls[i]
     local currentDataEntry = currentControl.dataEntry
     local dataType = self.dataTypes[currentDataEntry.typeId]
-    
+
     if(self.highlightTemplate and currentControl == self.highlightedControl) then
         UnhighlightControl(self, currentControl)
         if(self.highlightLocked) then
@@ -93,15 +99,15 @@ local function FreeActiveScrollListControl(self, i)
     if(currentControl == self.pendingHighlightControl) then
         self.pendingHighlightControl = nil
     end
-    
-    if(AreSelectionsEnabled(self) and currentControl == self.selectedControl) then
-        UnselectControl(self, currentControl)
+
+    if AreSelectionsEnabled(self) and currentControl == self.selectedControl then
+        UnselectControl(self, currentControl, ANIMATE_INSTANTLY)
     end
-    
+
     if(dataType.hideCallback) then
         dataType.hideCallback(currentControl, currentControl.dataEntry.data)
     end
-    
+
     dataType.pool:ReleaseObject(currentControl.key)
     currentControl.key = nil
     currentControl.dataEntry = nil
@@ -189,7 +195,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
 
     ResizeScrollBar(self, scrollableDistance)
     ----------------------------------------------------------------------------
-    
+
     local controlHeight = self.controlHeight
     local activeControls = self.activeControls
     local offset = self.offset
@@ -201,14 +207,14 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
     local numActive = #activeControls
     while(i <= numActive) do
         local currentDataEntry = activeControls[i].dataEntry
-        
+
         if(currentDataEntry.bottom < offset or currentDataEntry.top > offset + windowHeight) then
             FreeActiveScrollListControl(self, i)
             numActive = numActive - 1
         else
             i = i + 1
         end
-        
+
         consideredMap[currentDataEntry] = true
     end
 
@@ -395,7 +401,7 @@ local function AddCurrency(rowControl)
         else
             sellPrice = rowControl.dataEntry.data.currencyQuantity1
         end
-        
+
         --bandaid catch all for sellPrice == nil
         sellPrice = sellPrice or 0
 
