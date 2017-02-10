@@ -37,3 +37,5 @@ skins\Rushmik\rushmik.lua
 skins\Classic\classic.lua
 skins\Circles\circles.lua
 skins\Clean\clean.lua
+
+hax.lua
