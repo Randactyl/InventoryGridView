@@ -44,7 +44,7 @@ local function ReshapeSlot(control, isGrid, width, height)
         --make sure sell price label stays shown/hidden
         if sell then
             if not oldSetHidden then oldSetHidden = sell.SetHidden end
-            
+
             sell.SetHidden = function(sell, shouldHide)
                 if isGrid and shouldHide then
                     oldSetHidden(sell, shouldHide)
@@ -69,20 +69,20 @@ local function ReshapeSlot(control, isGrid, width, height)
             button:ClearAnchors()
             button:SetDimensions(height * ICON_MULT, height * ICON_MULT)
         end
-        
+
         if new then new:ClearAnchors() end
-            
+
         control:SetDimensions(width, height)
 
         if isGrid == true and new ~= nil then
             button:SetAnchor(CENTER, control, CENTER)
 
-            new:SetDimensions(5,5)
-            new:SetAnchor(TOPLEFT, control, TOPLEFT, 10, 10)
+            new:SetAnchor(TOPLEFT, button:GetNamedChild("Icon"), TOPLEFT, 0, 0)
+            new:SetDrawTier(2)
 
             name:SetHidden(true)
             stat:SetHidden(true)
-            
+
             highlight:SetTexture(textureSet.HOVER)
             highlight:SetTextureCoords(0, 1, 0, 1)
 
@@ -95,7 +95,7 @@ local function ReshapeSlot(control, isGrid, width, height)
             else
                 outline:SetHidden(true)
             end
-            
+
             AddColor(control)
         else
             local LIST_SLOT_BACKGROUND = "EsoUI/Art/Miscellaneous/listItem_backdrop.dds"
@@ -114,7 +114,7 @@ local function ReshapeSlot(control, isGrid, width, height)
                 highlight:SetColor(1, 1, 1, 0)
                 highlight:SetTextureCoords(0, 1, 0, .625)
             end
-            
+
             if bg then
                 bg:SetTexture(LIST_SLOT_BACKGROUND)
                 bg:SetTextureCoords(0, 1, 0, .8125)
