@@ -168,7 +168,7 @@ end
     esoui\libraries\zo_templates\scrolltemplates.lua
 --]]----------------------------------------------------------------------------
 local consideredMap = {}
-local function IGV_ScrollList_UpdateScroll_Grid(self)
+local function IGV_ScrollList_UpdateScroll_Grid(self) 
     local windowHeight = ZO_ScrollList_GetHeight(self)
   
     local controlHeight = self.controlHeight
@@ -447,16 +447,7 @@ local function freeActiveScrollListControls(scrollList)
         FreeActiveScrollListControl(scrollList, 1)
     end
 end
-
-function adapter.ScrollCommit(self)
-	if self == IGV.currentScrollList and settings.IsGrid(IGV.currentIGVId) then
-		IGV_ScrollList_Commit_Grid(self)
-		return true
-	else
-		return false
-	end
-end
-
+ 
 function adapter.ScrollController(self)
     if self == IGV.currentScrollList and settings.IsGrid(IGV.currentIGVId) then
         freeActiveScrollListControls(self)
@@ -482,7 +473,7 @@ function adapter.ToggleGrid()
 
     util.ReshapeSlots()
     freeActiveScrollListControls(scrollList)
-
+	ZO_ScrollList_Commit(scrollList)
     ZO_ScrollList_UpdateScroll(scrollList)
 
     if isGrid then

@@ -141,6 +141,7 @@ function util.ReshapeSlots()
         height = gridIconSize
     else
         width = scrollList:GetWidth()
+		scrollList.controlHeight = 52
         height = scrollList.controlHeight
     end
 
