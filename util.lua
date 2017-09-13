@@ -73,6 +73,10 @@ local function ReshapeSlot(control, isGrid, width, height)
         end
 
         if new then new:ClearAnchors() end
+		
+		--disable status' mouse callback
+		new:SetMouseEnabled(false)
+		new:GetNamedChild("Texture"):SetMouseEnabled(false)
 
         control:SetDimensions(width, height)
 
