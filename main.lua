@@ -42,7 +42,9 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
                 local function onFragmentShowing()
                     IGV.currentIGVId = IGVId
                     IGV.currentScrollList = scrollList
-
+					
+					--have to commit each time to refresh grid size changes
+                    ZO_ScrollList_Commit(scrollList)
                     ZO_ScrollList_UpdateScroll(scrollList)
 
                     KEYBIND_STRIP:AddKeybindButton(keybindButtonDescriptor)
@@ -123,6 +125,9 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
         --append item cost to tooltip
         ZO_PreHook("ZO_InventorySlot_OnMouseEnter", adapter.AddCurrencySoon)
 
+		--hook into scroll list commit
+		ZO_PreHook("ZO_ScrollList_Commit", adapter.ScrollCommit)
+		
         --hook into scroll list updates
         ZO_PreHook("ZO_ScrollList_UpdateScroll", adapter.ScrollController)
     end

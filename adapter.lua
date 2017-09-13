@@ -163,6 +163,97 @@ local function FindStartPoint(self, topEdge)
     end
 end
 
+
+local function CheckRunHandler(self, handlerName)
+    local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
+    if(mouseOverControl and not mouseOverControl:IsHidden() and mouseOverControl:IsChildOf(self)) then
+        local handler = mouseOverControl:GetHandler(handlerName)
+        if(handler) then
+            handler(mouseOverControl)
+        end
+    end
+end
+--[[----------------------------------------------------------------------------
+    Modified version of ZO_ScrollList_Commit(self) from
+    esoui\libraries\zo_templates\scrolltemplates.lua
+--]]----------------------------------------------------------------------------
+function IGV_ScrollList_Commit_Grid(self)
+    local windowHeight = ZO_ScrollList_GetHeight(self)
+    local selectionsEnabled = AreSelectionsEnabled(self)
+        
+    --the window isn't big enough to show anything (its anchors probably haven't been processed yet), so delay the commit until that happens
+    if(windowHeight <= 0) then
+        self.contents:SetHandler("OnUpdate", OnContentsUpdate)
+        return
+    end
+
+    CheckRunHandler(self, "OnMouseExit")
+    
+    self.visibleData = {}
+    
+    local scrollableDistance = 0
+    local foundSelected = false
+	local currentY = 0
+	local lastIndex = 1
+    local gridIconSize = settings.GetGridIconSize()
+    local contentsWidth = self.contents:GetWidth()
+    local contentsWidthMinusPadding = contentsWidth - LEFT_PADDING
+    local itemsPerRow = zo_floor(contentsWidthMinusPadding / gridIconSize)
+    local gridSpacing = .5
+	local totalControlWidth = gridIconSize + gridSpacing
+	--d(contentsWidth, contentsWidthMinusPadding, itemsPerRow)
+	for i = 1,#self.data do
+		local currentData = self.data[i]
+		if currentData.isHeader then
+			--Y add header's height
+			if i ~= 1 then
+				--next row
+				currentY = currentY + totalControlWidth *  (zo_floor((i - 1 - lastIndex) / itemsPerRow)  + 1)
+			end
+			lastIndex = i + 1 
+			currentData.top = currentY	
+			currentData.bottom = currentY + 40
+			currentData.left = LEFT_PADDING
+			currentY = currentY + 40
+		else 
+			currentData.top = zo_floor((i - lastIndex) / itemsPerRow) * totalControlWidth + currentY
+			--d(currentData.top)
+			currentData.bottom = currentData.top + totalControlWidth
+			currentData.left = (i - lastIndex) % itemsPerRow * totalControlWidth + LEFT_PADDING 
+		end
+		table.insert(self.visibleData, i)
+		
+		if selectionsEnabled and AreDataEqualSelections(self, currentData.data, self.selectedData) then
+			foundSelected = true
+			ZO_ScrollList_SelectData(self, currentData.data, NO_DATA_CONTROL, RESELECTING_DURING_REBUILD, ANIMATE_INSTANTLY)
+		end
+	end
+	scrollableDistance = currentY - windowHeight
+
+    ResizeScrollBar(self, scrollableDistance)
+    
+    --nuke the active list since things may have left it
+    local i = #self.activeControls
+    while(i >= 1) do
+        FreeActiveScrollListControl(self, i)
+        i = i - 1
+    end
+
+    if selectionsEnabled then
+        if not foundSelected then
+            if self.autoSelect then
+                AutoSelect(self, ANIMATE_INSTANTLY)
+            else
+                ZO_ScrollList_SelectData(self, NO_SELECTED_DATA, NO_DATA_CONTROL, RESELECTING_DURING_REBUILD, ANIMATE_INSTANTLY)
+            end
+        end
+    end
+
+    ZO_ScrollList_UpdateScroll(self)
+
+    CheckRunHandler(self, "OnMouseEnter")
+end
+
 --[[----------------------------------------------------------------------------
     Modified version of ZO_ScrollList_UpdateScroll(self) from
     esoui\libraries\zo_templates\scrolltemplates.lua
@@ -170,32 +261,7 @@ end
 local consideredMap = {}
 local function IGV_ScrollList_UpdateScroll_Grid(self)
     local windowHeight = ZO_ScrollList_GetHeight(self)
-
-    --Added---------------------------------------------------------------------
-    local gridIconSize = settings.GetGridIconSize()
-    local contentsWidth = self.contents:GetWidth()
-    local contentsWidthMinusPadding = contentsWidth - LEFT_PADDING
-    local itemsPerRow = zo_floor(contentsWidthMinusPadding / gridIconSize)
-    local numControls = #self.data or 0
-    local numRows = zo_ceil(numControls / itemsPerRow)
-    local gridSpacing = .5
-    local totalControlHeight = gridIconSize * numRows
-    local totalSpacingHeight = gridSpacing * (numRows - 1)
-    local scrollableDistance = (totalControlHeight + totalSpacingHeight) - windowHeight
-
-    local function GetTargetTopAndLeftPositions(viewIndex)
-        local totalControlWidth = gridIconSize + gridSpacing
-        local controlTop = zo_floor((viewIndex - 1) / itemsPerRow) * totalControlWidth
-        local controlLeft = ((viewIndex - 1) % itemsPerRow) * totalControlWidth + LEFT_PADDING
-
-        return controlTop, controlLeft
-    end
-
-    self.controlHeight = gridIconSize
-
-    ResizeScrollBar(self, scrollableDistance)
-    ----------------------------------------------------------------------------
-
+  
     local controlHeight = self.controlHeight
     local activeControls = self.activeControls
     local offset = self.offset
@@ -236,7 +302,8 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
 
     if dataEntry then
         --removed isUniform check because we're assuming always uniform
-        controlTop, controlLeft = GetTargetTopAndLeftPositions(i)
+        controlTop = dataEntry.top
+		controlLeft = dataEntry.left
     end
     ----------------------------------------------------------------------------
     while(dataEntry and controlTop <= bottomEdge) do
@@ -259,19 +326,13 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
             consideredMap[dataEntry] = true
 
             if(AreDataEqualSelections(self, dataEntry.data, self.selectedData)) then
-                SelectControl(self, control)
+                SelectControl(self, control, ANIMATE_INSTANTLY)
             end
 
             --even uniform active controls need to know their position to determine if they are still active
-            --Modified----------------------------------------------------------
-            --removed isUniform check because we're assuming always uniform
-            dataEntry.top = controlTop
-            dataEntry.bottom = controlTop + controlHeight
-            --------------------------------------------------------------------
-            --Added-------------------------------------------------------------
-            dataEntry.left = controlLeft
-            dataEntry.right = controlLeft + gridIconSize
-            --------------------------------------------------------------------
+			--Modified-------------------------------------------------------------- 
+		 
+			------------------------------------------------------------------------
         end
         i = i + 1
         visibleDataIndex = visibleData[i]
@@ -279,7 +340,8 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
         --Modified--------------------------------------------------------------
         if(dataEntry) then
             --removed isUniform check because we're assuming always uniform
-            controlTop, controlLeft = GetTargetTopAndLeftPositions(i)
+            controlTop = dataEntry.top
+			controlLeft = dataEntry.left
         end
         ------------------------------------------------------------------------
     end
@@ -306,6 +368,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
     for k,v in pairs(consideredMap) do
         consideredMap[k] = nil
     end
+	 
 end
 
 --[[----------------------------------------------------------------------------
@@ -436,6 +499,15 @@ local function freeActiveScrollListControls(scrollList)
     while #scrollList.activeControls > 0 do
         FreeActiveScrollListControl(scrollList, 1)
     end
+end
+
+function adapter.ScrollCommit(self)
+	if self == IGV.currentScrollList and settings.IsGrid(IGV.currentIGVId) then
+		IGV_ScrollList_Commit_Grid(self)
+		return true
+	else
+		return false
+	end
 end
 
 function adapter.ScrollController(self)

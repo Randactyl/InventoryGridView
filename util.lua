@@ -25,6 +25,7 @@ end
 local oldSetHidden
 local function ReshapeSlot(control, isGrid, width, height)
     if control == nil then return end
+	if control.dataEntry == nil or control.dataEntry.isHeader then return end
 
     local ICON_MULT = 0.77
     local textureSet = IGV.settings.GetTextureSet()
