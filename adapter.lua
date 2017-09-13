@@ -171,11 +171,6 @@ local consideredMap = {}
 local function IGV_ScrollList_UpdateScroll_Grid(self) 
     local windowHeight = ZO_ScrollList_GetHeight(self)
   
-    local controlHeight = self.controlHeight
-    local activeControls = self.activeControls
-    local offset = self.offset
-
-    UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
 	
 	
     --Added------------------------------------------------------------------
@@ -212,8 +207,13 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
 	scrollableDistance = currentY - windowHeight
 
     ResizeScrollBar(self, scrollableDistance)
-    --------------------------------------------------------------------
-	
+    ----------------------------------------------------------------------------
+
+    local controlHeight = self.controlHeight
+    local activeControls = self.activeControls
+    local offset = self.offset
+
+    UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
 	
     --remove active controls that are now hidden
     local i = 1
@@ -315,7 +315,6 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
     for k,v in pairs(consideredMap) do
         consideredMap[k] = nil
     end
-	 
 end
 
 --[[----------------------------------------------------------------------------
@@ -447,7 +446,7 @@ local function freeActiveScrollListControls(scrollList)
         FreeActiveScrollListControl(scrollList, 1)
     end
 end
- 
+
 function adapter.ScrollController(self)
     if self == IGV.currentScrollList and settings.IsGrid(IGV.currentIGVId) then
         freeActiveScrollListControls(self)

@@ -26,6 +26,7 @@ local oldSetHidden
 local function ReshapeSlot(control, isGrid, width, height)
     if control == nil then return end
 	if control.dataEntry == nil or control.dataEntry.isHeader then return end
+	if height == nil then height = 52 end
 
     local ICON_MULT = 0.77
     local textureSet = IGV.settings.GetTextureSet()
@@ -141,7 +142,7 @@ function util.ReshapeSlots()
         height = gridIconSize
     else
         width = scrollList:GetWidth()
-		scrollList.controlHeight = 52
+	scrollList.controlHeight = 52
         height = scrollList.controlHeight
     end
 
