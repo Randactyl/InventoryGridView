@@ -24,7 +24,7 @@ lib\LibCustomTitles\LibCustomTitles.lua
 
 strings\en.lua
 strings\$(language).lua
- 
+
 main.lua
 util.lua
 settings.lua
