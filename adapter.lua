@@ -163,34 +163,22 @@ local function FindStartPoint(self, topEdge)
     end
 end
 
-
-local function CheckRunHandler(self, handlerName)
-    local mouseOverControl = WINDOW_MANAGER:GetMouseOverControl()
-    if(mouseOverControl and not mouseOverControl:IsHidden() and mouseOverControl:IsChildOf(self)) then
-        local handler = mouseOverControl:GetHandler(handlerName)
-        if(handler) then
-            handler(mouseOverControl)
-        end
-    end
-end
 --[[----------------------------------------------------------------------------
-    Modified version of ZO_ScrollList_Commit(self) from
+    Modified version of ZO_ScrollList_UpdateScroll(self) from
     esoui\libraries\zo_templates\scrolltemplates.lua
 --]]----------------------------------------------------------------------------
-function IGV_ScrollList_Commit_Grid(self)
+local consideredMap = {}
+local function IGV_ScrollList_UpdateScroll_Grid(self)
     local windowHeight = ZO_ScrollList_GetHeight(self)
-    local selectionsEnabled = AreSelectionsEnabled(self)
-        
-    --the window isn't big enough to show anything (its anchors probably haven't been processed yet), so delay the commit until that happens
-    if(windowHeight <= 0) then
-        self.contents:SetHandler("OnUpdate", OnContentsUpdate)
-        return
-    end
+  
+    local controlHeight = self.controlHeight
+    local activeControls = self.activeControls
+    local offset = self.offset
 
-    CheckRunHandler(self, "OnMouseExit")
-    
-    self.visibleData = {}
-    
+    UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
+	
+	
+    --Added------------------------------------------------------------------
     local scrollableDistance = 0
     local foundSelected = false
 	local currentY = 0
@@ -201,7 +189,6 @@ function IGV_ScrollList_Commit_Grid(self)
     local itemsPerRow = zo_floor(contentsWidthMinusPadding / gridIconSize)
     local gridSpacing = .5
 	local totalControlWidth = gridIconSize + gridSpacing
-	--d(contentsWidth, contentsWidthMinusPadding, itemsPerRow)
 	for i = 1,#self.data do
 		local currentData = self.data[i]
 		if currentData.isHeader then
@@ -220,54 +207,14 @@ function IGV_ScrollList_Commit_Grid(self)
 			--d(currentData.top)
 			currentData.bottom = currentData.top + totalControlWidth
 			currentData.left = (i - lastIndex) % itemsPerRow * totalControlWidth + LEFT_PADDING 
-		end
-		table.insert(self.visibleData, i)
-		
-		if selectionsEnabled and AreDataEqualSelections(self, currentData.data, self.selectedData) then
-			foundSelected = true
-			ZO_ScrollList_SelectData(self, currentData.data, NO_DATA_CONTROL, RESELECTING_DURING_REBUILD, ANIMATE_INSTANTLY)
-		end
+		end 
 	end
 	scrollableDistance = currentY - windowHeight
 
     ResizeScrollBar(self, scrollableDistance)
-    
-    --nuke the active list since things may have left it
-    local i = #self.activeControls
-    while(i >= 1) do
-        FreeActiveScrollListControl(self, i)
-        i = i - 1
-    end
-
-    if selectionsEnabled then
-        if not foundSelected then
-            if self.autoSelect then
-                AutoSelect(self, ANIMATE_INSTANTLY)
-            else
-                ZO_ScrollList_SelectData(self, NO_SELECTED_DATA, NO_DATA_CONTROL, RESELECTING_DURING_REBUILD, ANIMATE_INSTANTLY)
-            end
-        end
-    end
-
-    ZO_ScrollList_UpdateScroll(self)
-
-    CheckRunHandler(self, "OnMouseEnter")
-end
-
---[[----------------------------------------------------------------------------
-    Modified version of ZO_ScrollList_UpdateScroll(self) from
-    esoui\libraries\zo_templates\scrolltemplates.lua
---]]----------------------------------------------------------------------------
-local consideredMap = {}
-local function IGV_ScrollList_UpdateScroll_Grid(self)
-    local windowHeight = ZO_ScrollList_GetHeight(self)
-  
-    local controlHeight = self.controlHeight
-    local activeControls = self.activeControls
-    local offset = self.offset
-
-    UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
-
+    --------------------------------------------------------------------
+	
+	
     --remove active controls that are now hidden
     local i = 1
     local numActive = #activeControls

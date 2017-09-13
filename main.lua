@@ -124,9 +124,6 @@ local function InventoryGridViewLoaded(eventCode, addOnName)
 
         --append item cost to tooltip
         ZO_PreHook("ZO_InventorySlot_OnMouseEnter", adapter.AddCurrencySoon)
-
-		--hook into scroll list commit
-		ZO_PreHook("ZO_ScrollList_Commit", adapter.ScrollCommit)
 		
         --hook into scroll list updates
         ZO_PreHook("ZO_ScrollList_UpdateScroll", adapter.ScrollController)
