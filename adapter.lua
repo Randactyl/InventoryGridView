@@ -9,6 +9,8 @@ local LEFT_PADDING = 25
 --[[----------------------------------------------------------------------------
     Ported ZOS code from esoui\libraries\zo_templates\scrolltemplates.lua
 --]]----------------------------------------------------------------------------
+local MAX_FADE_VALUE = 64
+
 local ANIMATE_INSTANTLY = true
 
 local function UpdateScrollFade(useFadeGradient, scroll, slider, sliderValue)
@@ -17,13 +19,13 @@ local function UpdateScrollFade(useFadeGradient, scroll, slider, sliderValue)
         sliderValue = sliderValue or slider:GetValue()
 
         if(sliderValue > sliderMin) then
-            scroll:SetFadeGradient(1, 0, 1, zo_min(sliderValue - sliderMin, 64))
+            scroll:SetFadeGradient(1, 0, 1, zo_min(sliderValue - sliderMin, MAX_FADE_VALUE))
         else
             scroll:SetFadeGradient(1, 0, 0, 0)
         end
 
         if(sliderValue < sliderMax) then
-            scroll:SetFadeGradient(2, 0, -1, zo_min(sliderMax - sliderValue, 64))
+            scroll:SetFadeGradient(2, 0, -1, zo_min(sliderMax - sliderValue, MAX_FADE_VALUE))
         else
             scroll:SetFadeGradient(2, 0, 0, 0);
         end
@@ -310,7 +312,7 @@ end
 
 --[[----------------------------------------------------------------------------
     Modified version of ZO_ItemTooltip_AddMoney(...) from
-    esoui\ingame\tooltip\tooltip.lua
+    esoui\publicallingames\tooltip\tooltip.lua
 --]]----------------------------------------------------------------------------
 --Added currencyType parameter
 local privateKey = {}
@@ -335,7 +337,7 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
     currencyControl:ClearAnchors()
 
     -- right now reason is always a string index
-    --Modified------------------------------------------------------------------
+    --Added------------------------------------------------------------------
     if reason == privateKey and amount > 0 then
         reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
         currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING)
@@ -346,10 +348,12 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
 
         local reasonTextWidth, reasonTextHeight = reasonLabel:GetTextDimensions()
         width = width + reasonTextWidth + REASON_CURRENCY_SPACING
-    elseif reason and reason ~= 0 and reason ~= privateKey then
+    ----------------------------------------------------------------------------
+    --Modified------------------------------------------------------------------
+    elseif(reason and reason ~= 0) then
     ----------------------------------------------------------------------------
         reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
-        currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING, -5)
+        currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING, -2)
 
         reasonLabel:SetHidden(false)
         reasonLabel:SetColor(SELL_REASON_COLOR:UnpackRGBA())
@@ -366,7 +370,8 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
         currencyControl:SetHidden(false)
         --Modified--------------------------------------------------------------
         ZO_CurrencyControl_SetSimpleCurrency(currencyControl, currencyType,
-            amount, ITEM_TOOLTIP_CURRENCY_OPTIONS, CURRENCY_DONT_SHOW_ALL, notEnough)
+            amount, ITEM_TOOLTIP_CURRENCY_OPTIONS, CURRENCY_DONT_SHOW_ALL,
+            notEnough)
         ------------------------------------------------------------------------
         width = width + currencyControl:GetWidth()
     else
