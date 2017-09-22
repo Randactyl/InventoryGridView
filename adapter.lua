@@ -168,30 +168,44 @@ end
     esoui\libraries\zo_templates\scrolltemplates.lua
 --]]----------------------------------------------------------------------------
 local consideredMap = {}
-local function IGV_ScrollList_UpdateScroll_Grid(self)
+local function IGV_ScrollList_UpdateScroll_Grid(self) 
     local windowHeight = ZO_ScrollList_GetHeight(self)
-
-    --Added---------------------------------------------------------------------
+  
+	
+	
+    --Added------------------------------------------------------------------
+    local scrollableDistance = 0
+    local foundSelected = false
+	local currentY = 0
+	local lastIndex = 1
     local gridIconSize = settings.GetGridIconSize()
     local contentsWidth = self.contents:GetWidth()
     local contentsWidthMinusPadding = contentsWidth - LEFT_PADDING
     local itemsPerRow = zo_floor(contentsWidthMinusPadding / gridIconSize)
-    local numControls = #self.data or 0
-    local numRows = zo_ceil(numControls / itemsPerRow)
     local gridSpacing = .5
-    local totalControlHeight = gridIconSize * numRows
-    local totalSpacingHeight = gridSpacing * (numRows - 1)
-    local scrollableDistance = (totalControlHeight + totalSpacingHeight) - windowHeight
-
-    local function GetTargetTopAndLeftPositions(viewIndex)
-        local totalControlWidth = gridIconSize + gridSpacing
-        local controlTop = zo_floor((viewIndex - 1) / itemsPerRow) * totalControlWidth
-        local controlLeft = ((viewIndex - 1) % itemsPerRow) * totalControlWidth + LEFT_PADDING
-
-        return controlTop, controlLeft
-    end
-
-    self.controlHeight = gridIconSize
+	local totalControlWidth = gridIconSize + gridSpacing
+	for i = 1,#self.data do
+		local currentData = self.data[i]
+		if currentData.isHeader then
+			--Y add header's height
+			if i ~= 1 then
+				--next row
+				currentY = currentY + totalControlWidth *  (zo_floor((i - 1 - lastIndex) / itemsPerRow)  + 1)
+			end
+			lastIndex = i + 1 
+			currentData.top = currentY	
+			currentData.bottom = currentY + 40
+			currentData.left = LEFT_PADDING
+			currentY = currentY + 40
+		else 
+			currentData.top = zo_floor((i - lastIndex) / itemsPerRow) * totalControlWidth + currentY
+			--d(currentData.top)
+			currentData.bottom = currentData.top + totalControlWidth
+			currentData.left = (i - lastIndex) % itemsPerRow * totalControlWidth + LEFT_PADDING 
+		end 
+	end
+	currentY = currentY + totalControlWidth *  (zo_floor((#self.data - 1 - lastIndex) / itemsPerRow)  + 1)
+	scrollableDistance = currentY - windowHeight
 
     ResizeScrollBar(self, scrollableDistance)
     ----------------------------------------------------------------------------
@@ -201,7 +215,7 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
     local offset = self.offset
 
     UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
-
+	
     --remove active controls that are now hidden
     local i = 1
     local numActive = #activeControls
@@ -236,7 +250,8 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
 
     if dataEntry then
         --removed isUniform check because we're assuming always uniform
-        controlTop, controlLeft = GetTargetTopAndLeftPositions(i)
+        controlTop = dataEntry.top
+		controlLeft = dataEntry.left
     end
     ----------------------------------------------------------------------------
     while(dataEntry and controlTop <= bottomEdge) do
@@ -259,19 +274,13 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
             consideredMap[dataEntry] = true
 
             if(AreDataEqualSelections(self, dataEntry.data, self.selectedData)) then
-                SelectControl(self, control)
+                SelectControl(self, control, ANIMATE_INSTANTLY)
             end
 
             --even uniform active controls need to know their position to determine if they are still active
-            --Modified----------------------------------------------------------
-            --removed isUniform check because we're assuming always uniform
-            dataEntry.top = controlTop
-            dataEntry.bottom = controlTop + controlHeight
-            --------------------------------------------------------------------
-            --Added-------------------------------------------------------------
-            dataEntry.left = controlLeft
-            dataEntry.right = controlLeft + gridIconSize
-            --------------------------------------------------------------------
+			--Modified-------------------------------------------------------------- 
+		 
+			------------------------------------------------------------------------
         end
         i = i + 1
         visibleDataIndex = visibleData[i]
@@ -279,7 +288,8 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
         --Modified--------------------------------------------------------------
         if(dataEntry) then
             --removed isUniform check because we're assuming always uniform
-            controlTop, controlLeft = GetTargetTopAndLeftPositions(i)
+            controlTop = dataEntry.top
+			controlLeft = dataEntry.left
         end
         ------------------------------------------------------------------------
     end
@@ -463,7 +473,7 @@ function adapter.ToggleGrid()
 
     util.ReshapeSlots()
     freeActiveScrollListControls(scrollList)
-
+	ZO_ScrollList_Commit(scrollList)
     ZO_ScrollList_UpdateScroll(scrollList)
 
     if isGrid then
