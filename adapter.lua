@@ -350,7 +350,7 @@ function ZO_ItemTooltip_AddMoney(tooltipControl, amount, reason, notEnough, curr
         width = width + reasonTextWidth + REASON_CURRENCY_SPACING
     ----------------------------------------------------------------------------
     --Modified------------------------------------------------------------------
-    elseif(reason and reason ~= 0) then
+    elseif reason and reason ~= 0 and reason ~= privateKey then
     ----------------------------------------------------------------------------
         reasonLabel:SetAnchor(TOPLEFT, nil, TOPLEFT, 0, 0)
         currencyControl:SetAnchor(TOPLEFT, reasonLabel, TOPRIGHT, REASON_CURRENCY_SPACING, -2)
