@@ -39,7 +39,7 @@ local function ReshapeSlot(control, isGrid, width, height)
         local button = control:GetNamedChild("Button")
         local name = control:GetNamedChild("Name")
         local sell = control:GetNamedChild("SellPrice")
-        local stat = control:GetNamedChild("StatValue")
+        --local stat = control:GetNamedChild("StatValue")
 
         --make sure sell price label stays shown/hidden
         if sell then
@@ -86,7 +86,7 @@ local function ReshapeSlot(control, isGrid, width, height)
             new:GetNamedChild("Texture"):SetMouseEnabled(false)
 
             name:SetHidden(true)
-            stat:SetHidden(true)
+            --stat:SetHidden(true)
 
             highlight:SetTexture(textureSet.HOVER)
             highlight:SetTextureCoords(0, 1, 0, 1)
@@ -118,7 +118,7 @@ local function ReshapeSlot(control, isGrid, width, height)
             end
 
             if name then name:SetHidden(false) end
-            if stat then stat:SetHidden(false) end
+            --if stat then stat:SetHidden(false) end
             outline:SetHidden(true)
 
             if highlight then
