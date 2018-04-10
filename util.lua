@@ -39,6 +39,7 @@ local function ReshapeSlot(control, isGrid, width, height)
         local button = control:GetNamedChild("Button")
         local name = control:GetNamedChild("Name")
         local sell = control:GetNamedChild("SellPrice")
+        local traitInfo = control:GetNamedChild("TraitInfo")
         --local stat = control:GetNamedChild("StatValue")
 
         --make sure sell price label stays shown/hidden
@@ -71,6 +72,17 @@ local function ReshapeSlot(control, isGrid, width, height)
         end
 
         if new then new:ClearAnchors() end
+
+        if isGrid and traitInfo ~= nil then
+            traitInfo:ClearAnchors()
+            traitInfo:SetDimensions(25, 25)
+            traitInfo:SetAnchor(TOPRIGHT, control, TOPRIGHT)
+            traitInfo:SetDrawTier(DT_HIGH)
+        elseif traitInfo ~= nil then
+            traitInfo:ClearAnchors()
+            traitInfo:SetDimensions(32, 32)
+            traitInfo:SetAnchor(RIGHT, sell, LEFT, -5)
+        end
 
         control:SetDimensions(width, height)
 
@@ -106,7 +118,7 @@ local function ReshapeSlot(control, isGrid, width, height)
             local LIST_SLOT_BACKGROUND = "EsoUI/Art/Miscellaneous/listItem_backdrop.dds"
             local LIST_SLOT_HOVER = "EsoUI/Art/Miscellaneous/listitem_highlight.dds"
 
-            if button then button:SetAnchor(CENTER, control, TOPLEFT, 47, 26) end
+            if button then button:SetAnchor(CENTER, control, TOPLEFT, 70, 26) end
 
             if new then
                 new:SetDimensions(32, 32)
