@@ -311,6 +311,144 @@ local function IGV_ScrollList_UpdateScroll_Grid(self)
 end
 
 --[[----------------------------------------------------------------------------
+    Modified version of IGV_ScrollList_UpdateScroll_Grid(self) that
+    fixes the known issue: "When switching from grid to list view, 
+    items in the list will not be anchored correctly."
+    Also fixes another slight anchor issue for the previous workaround.
+--]]----------------------------------------------------------------------------
+local function IGV_ScrollList_UpdateScroll_List(self)
+    local windowHeight = ZO_ScrollList_GetHeight(self)
+
+    --Added---------------------------------------------------------------------
+    local listItemHeight = self.uniformControlHeight
+    local controlLeft = self.controlLeft
+    local controlRight = self.controlRight
+    local numControls = #self.data or 0
+    local numRows = zo_ceil(numControls)
+    local gridSpacing = .5
+    local totalControlHeight = listItemHeight * numRows
+    local totalSpacingHeight = gridSpacing * (numRows - 1)
+    local scrollableDistance = (totalControlHeight + totalSpacingHeight) - windowHeight
+
+    self.controlHeight = listItemHeight
+    
+    ResizeScrollBar(self, scrollableDistance)
+    ----------------------------------------------------------------------------
+
+    local activeControls = self.activeControls
+    local offset = self.offset
+
+    UpdateScrollFade(self.useFadeGradient, self.contents, self.scrollbar, offset)
+
+    --remove active controls that are now hidden
+    local i = 1
+    local numActive = #activeControls
+    while(i <= numActive) do
+        local currentDataEntry = activeControls[i].dataEntry
+
+        if(currentDataEntry.bottom < offset or currentDataEntry.top > offset + windowHeight) then
+            FreeActiveScrollListControl(self, i)
+            numActive = numActive - 1
+        else
+            i = i + 1
+        end
+
+        consideredMap[currentDataEntry] = true
+    end
+
+    --add revealed controls
+    local firstInViewIndex = FindStartPoint(self, offset)
+
+    local data = self.data
+    local dataTypes = self.dataTypes
+    local visibleData = self.visibleData
+    local mode = self.mode
+
+    local i = firstInViewIndex
+    local visibleDataIndex = visibleData[i]
+    local dataEntry = data[visibleDataIndex]
+    local bottomEdge = offset + windowHeight
+
+    --Modified------------------------------------------------------------------
+    local controlTop
+    local uniformControlHeight = self.uniformControlHeight
+
+    if dataEntry then
+        --removed isUniform check because we're assuming always uniform
+        controlTop = (i - 1) * uniformControlHeight
+    end
+    ----------------------------------------------------------------------------
+    while(dataEntry and controlTop <= bottomEdge) do
+        if(not consideredMap[dataEntry]) then
+            local dataType = dataTypes[dataEntry.typeId]
+            local controlPool = dataType.pool
+            local control, key = controlPool:AcquireObject()
+
+            control:SetHidden(false)
+            control.dataEntry = dataEntry
+            control.key = key
+            control.index = visibleDataIndex
+            --Added-------------------------------------------------------------
+            control.isGrid = false
+            --------------------------------------------------------------------
+            if(dataType.setupCallback) then
+                dataType.setupCallback(control, dataEntry.data, self)
+            end
+            table.insert(activeControls, control)
+            consideredMap[dataEntry] = true
+
+            if(AreDataEqualSelections(self, dataEntry.data, self.selectedData)) then
+                SelectControl(self, control)
+            end
+
+            --even uniform active controls need to know their position to determine if they are still active
+            --Modified----------------------------------------------------------
+            --removed isUniform check because we're assuming always uniform
+            dataEntry.top = controlTop
+            dataEntry.bottom = controlTop + uniformControlHeight
+            --------------------------------------------------------------------
+            
+            --Added-------------------------------------------------------------
+            dataEntry.left = controlLeft
+            dataEntry.right = controlRight
+            --------------------------------------------------------------------
+        end
+        i = i + 1
+        visibleDataIndex = visibleData[i]
+        dataEntry = data[visibleDataIndex]
+        --Modified--------------------------------------------------------------
+        if(dataEntry) then
+            --removed isUniform check because we're assuming always uniform
+            controlTop = (i - 1) * uniformControlHeight
+        end
+        ------------------------------------------------------------------------
+    end
+
+    --update positions
+    local contents = self.contents
+    local numActive = #activeControls
+
+    for i = 1, numActive do
+        local currentControl = activeControls[i]
+        local currentData = currentControl.dataEntry
+        local controlOffset = currentData.top - offset
+        --Added-----------------------------------------------------------------
+        local controlOffsetX = currentData.left
+        ------------------------------------------------------------------------
+        currentControl:ClearAnchors()
+        --Modified--------------------------------------------------------------
+        currentControl:SetAnchor(TOPLEFT, contents, TOPLEFT, controlOffsetX, controlOffset)
+        currentControl:SetAnchor(TOPRIGHT, contents, TOPRIGHT, controlOffsetX, controlOffset)
+        ------------------------------------------------------------------------
+    end
+
+    --reset considered
+    for k,v in pairs(consideredMap) do
+        consideredMap[k] = nil
+    end
+end
+
+--[[----------------------------------------------------------------------------
     Modified version of ZO_ItemTooltip_AddMoney(...) from
     esoui\publicallingames\tooltip\tooltip.lua
 --]]----------------------------------------------------------------------------
@@ -444,9 +582,13 @@ local function freeActiveScrollListControls(scrollList)
 end
 
 function adapter.ScrollController(self)
-    if self == IGV.currentScrollList and settings.IsGrid(IGV.currentIGVId) then
+    if self == IGV.currentScrollList then
         freeActiveScrollListControls(self)
-        IGV_ScrollList_UpdateScroll_Grid(self)
+        if settings.IsGrid(IGV.currentIGVId) then
+            IGV_ScrollList_UpdateScroll_Grid(self)
+        else
+            IGV_ScrollList_UpdateScroll_List(self)
+        end
         util.ReshapeSlots()
 
         return true
